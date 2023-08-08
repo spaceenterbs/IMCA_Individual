@@ -14,6 +14,7 @@ from pathlib import Path
 import os
 import environ
 from datetime import timedelta
+from django.core.exceptions import ImproperlyConfigured
 
 env = environ.Env()
 
@@ -23,14 +24,24 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY")
-API_KEY = env("API_KEY")
 
+def get_env_variable(var_name):
+    try:
+        return os.environ[var_name]
+    except KeyError:
+        error_msg = "Set the {} environment variable".format(var_name)
+        raise ImproperlyConfigured(error_msg)
+
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = get_env_variable("SECRET_KEY")
+API_KEY = get_env_variable("API_KEY")
+
+print(SECRET_KEY, API_KEY)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -169,5 +180,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3001",
     "http://127.0.0.1:3001",
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 CORS_ALLOW_CREDENTIALS = True

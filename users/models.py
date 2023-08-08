@@ -58,7 +58,7 @@ class UserManager(BaseUserManager):
             gender=gender,
             name=name,
         )
-        user.is_staff = True
+        user.is_admin = True
         user.is_superuser = True
         user.is_active = True
         user.save(using=self._db)
@@ -84,10 +84,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.CharField(max_length=30, unique=True, null=False, blank=False)
     gender = models.CharField(max_length=6, choices=GenderChoices.choices)
     name = models.CharField(max_length=10, null=False, blank=False)
-    is_stuff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    is_admin = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_ad = models.DateTimeField(auto_now=True)
+
+    @property
+    def is_staff(self):
+        return self.is_admin
 
     objects = UserManager()
 
