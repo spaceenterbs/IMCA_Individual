@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "backend"
+version = "0.1.0"
+description = ""
+authors = ["jinwoo <sds7629>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+django = "^4.2.4"
+djangorestframework = "^3.14.0"
+djangorestframework-simplejwt = "^5.2.2"
+pillow = "^10.0.0"
+django-cors-headers = "^4.2.0"
+environ = "^1.0"
+django-environ = "^0.10.0"
+requests = "^2.31.0"
+sqlparse = "^0.4.4"
+urllib3 = "^2.0.4"
+drf-yasg = "^1.21.7"
+
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
