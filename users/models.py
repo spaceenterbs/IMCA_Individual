@@ -43,10 +43,10 @@ class UserManager(BaseUserManager):
         login_id=None,
         email=None,
         password=None,
-        nickname=None,
+        nickname="IMCA",
         profileImg=None,
-        gender=None,
-        name=None,
+        gender="male",
+        name="IMCA",
         **extra_fields,
     ):
         user = self.create_user(

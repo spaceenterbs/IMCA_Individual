@@ -39,7 +39,7 @@ API_KEY = get_env_variable("API_KEY")
 
 print(SECRET_KEY, API_KEY)
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
