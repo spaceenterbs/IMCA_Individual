@@ -1,12 +1,26 @@
 from rest_framework import serializers
-from .models import PrivateCalender, Memo
+from .models import PrivateCalendar, Memo
+
 
 class MemoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Memo
         fields = "__all__"
 
-class InfoSerializer(serializers.ModelSerializer):
+
+class SemiInfoSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PrivateCalender
-        fields = ("start_date","end_date","name", "state","genre",)
+        model = PrivateCalendar
+        fields = (
+            "start_date",
+            "end_date",
+            "name",
+            "state",
+            "genre",
+        )
+
+
+class DetailInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PrivateCalendar
+        fields = "__all__"

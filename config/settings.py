@@ -39,7 +39,7 @@ API_KEY = get_env_variable("API_KEY")
 
 print(SECRET_KEY, API_KEY)
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -55,7 +55,7 @@ THIRDPARTY_APPS = [
     "youtube_videos.apps.YoutubeVideosConfig",
     "community_boards.apps.CommunityBoardsConfig",
     "reviews.apps.ReviewsConfig",
-    "reviews_reviews.apps.ReviewsReviewsConfig",
+    "bigreviews.apps.BigreviewsConfig",
     "corsheaders",
     "apis.apps.ApisConfig",
     "reports.apps.ReportsConfig",
@@ -168,6 +168,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
+
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
+MEDIA_URL = "/media/"
+
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

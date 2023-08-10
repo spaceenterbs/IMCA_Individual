@@ -4,11 +4,13 @@ from rest_framework.response import Response
 from .models import Youtube_Video
 from .serializers import Youtube_VideoSerializer
 from rest_framework.status import (
+    HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_400_BAD_REQUEST,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 from django.db.models import F
+from datetime import datetime, timedelta
 
 
 class Youtube_Videos(APIView):
@@ -40,11 +42,35 @@ class Youtube_VideoDetail(APIView):
 
     def get(self, request, pk):
         youtube_video = self.get_object(pk)
+        # 쿠키에서 이미 조회한 비디오의 목록을 가져옴
+        youtube_video = self.get_object(pk)
+        viewed_videos = request.COOKIES.get("viewed_videos", "").split(",")
+        if str(pk) not in viewed_videos:
+            Youtube_Video.objects.filter(pk=pk).update(views_count=F("views_count") + 1)
+            viewed_videos.append(str(pk))
         # youtube_video.views_count += 1  # Increase the views_count
         # youtube_video.save()  # Save the changes to the database
-        Youtube_Video.objects.filter(pk=pk).update(views_count=F("views_count") + 1)
+        # Youtube_Video.objects.filter(pk=pk).update(
+        #     views_count=F("views_count") + 1)
+        # serializer = Youtube_VideoSerializer(youtube_video)
         serializer = Youtube_VideoSerializer(youtube_video)
-        return Response(serializer.data)
+        response = Response(serializer.data)
+
+        # 쿠키 설정
+        expires = datetime.strftime(
+            datetime.utcnow() + timedelta(days=30), "%a, %d-%b-%Y %H:%M:%S GMT"
+        )
+        response.set_cookie(
+            "viewed_videos",
+            ",".join(viewed_videos),
+            expires=expires,
+            httponly=True,
+            secure=True,
+            samesite="Lax",
+        )
+
+        return response
+        # return Response(serializer.data)
 
     def put(self, request, pk):
         youtube_video = self.get_object(pk)

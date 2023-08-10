@@ -25,7 +25,7 @@ class UserManager(BaseUserManager):
         **kwargs,
     ):
         if not email:
-            raise ValueError("이메일을 필수사항입니다.")
+            raise ValueError("이메일은 필수사항입니다.")
         user = self.model(
             login_id=login_id,
             email=email,
