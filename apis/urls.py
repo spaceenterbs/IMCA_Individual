@@ -4,4 +4,5 @@ from . import views
 urlpatterns = [
     path("public/", views.GetPublicAPI.as_view()),
     path("boxoffice/", views.BoxOfficeAPI.as_view()),
+    path("detail/", views.DetailAPI.as_view()),
 ]

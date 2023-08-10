@@ -37,7 +37,6 @@ def get_env_variable(var_name):
 SECRET_KEY = get_env_variable("SECRET_KEY")
 API_KEY = get_env_variable("API_KEY")
 
-print(SECRET_KEY, API_KEY)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -60,6 +59,8 @@ THIRDPARTY_APPS = [
     "apis.apps.ApisConfig",
     "reports.apps.ReportsConfig",
     "drf_yasg",
+    "django_apscheduler",
+    "xmltodict",
 ]
 
 DEFAULT_APPS = [
@@ -179,6 +180,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"  # Default 스케쥴러
+
+SCHEDULER_DEFAULT = True  # API 스케쥴러
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
