@@ -5,6 +5,7 @@ from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from .models import PrivateCalendar
 from users.models import User
+from .models import Memo
 from . import serializers
 
 
@@ -40,8 +41,16 @@ class CalendarDetail(APIView):
         return Response(serializer.data)
 
 
-class Memoapi(APIView):
-    pass
+# class Memoapi(APIView):
+#     def get_cal(self,pk):
+#         try:
+#             return PrivateCalendar.objects.get(pk = pk)
+#         except PrivateCalendar.DoesNotExist:
+#             raise NotFound
+
+#     def get(self, request, cal_pk):
+#         cal = self.get_cal(cal_pk)
+#         memo = Memo.objects.filter()
 
 
 # Create your views here.

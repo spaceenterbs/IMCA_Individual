@@ -18,14 +18,13 @@ class GetPublicAPI(APIView):
         return timezone.localtime(timezone.now()) - timedelta(weeks=1)
 
     def get(self, request):
-        url = "http://kopis.or.kr/openApi/restful/pblprfr"
+        url = f"http://kopis.or.kr/openApi/restful/pblprfr/?service={API_KEY}"
         shcate = request.GET.get("shcate", None)
         prfstate = request.GET.get("prfstate", None)
         prfpdfrom = request.GET.get("prfpdfrom", None)
         prfpdto = request.GET.get("prfpdto", None)
 
         params = {
-            "service": API_KEY,
             "cpage": "1",  # 페이지
             "rows": "30",  # 불러올 데이터 갯수
             "shcate": shcate,  # 장르 코드
@@ -35,6 +34,7 @@ class GetPublicAPI(APIView):
             "signgucode": "11",
         }
         response = requests.get(url, params=params)
+        print("response test: ", response)
         xmldata = xmltodict.parse(response.text)
         jsontext = json.dumps(xmldata["dbs"]["db"], ensure_ascii=False)
         return Response(jsontext)

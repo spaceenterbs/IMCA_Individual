@@ -20,6 +20,11 @@ class Memo(models.Model):
         on_delete=models.CASCADE,
         related_name="memos",
     )
+    user = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE,
+        related_name="memos",
+    )
     title = models.CharField(max_length=15)
     content = models.TextField()
 
