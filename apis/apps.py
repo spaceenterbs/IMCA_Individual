@@ -9,7 +9,7 @@ class ApisConfig(AppConfig):
 
 class ApiSchedulerConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "APIscheduler"
+    name = "apischeduler"
 
     def ready(self):
         if settings.SCHEDULER_DEFAULT:

@@ -57,6 +57,7 @@ THIRDPARTY_APPS = [
     "bigreviews.apps.BigreviewsConfig",
     "corsheaders",
     "apis.apps.ApisConfig",
+    "boxapi.apps.BoxapiConfig",
     "reports.apps.ReportsConfig",
     "drf_yasg",
     "django_apscheduler",

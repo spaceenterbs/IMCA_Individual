@@ -38,6 +38,7 @@ urlpatterns = [
     path("api/v1/users/", include("users.urls")),
     path("api/v1/youtube_videos/", include("youtube_videos.urls")),
     path("API/", include("apis.urls")),
+    path("boxoffice/", include("boxapi.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
