@@ -19,7 +19,7 @@ class GetPublicAPI(APIView):
 
     def get(self, request):
         url = "http://kopis.or.kr/openApi/restful/pblprfr"
-        shcate = request.GET.getlist("shcate", None)
+        shcate = request.GET.get("shcate", None)
         prfstate = request.GET.get("prfstate", None)
         prfpdfrom = request.GET.get("prfpdfrom", None)
         prfpdto = request.GET.get("prfpdto", None)
@@ -27,11 +27,11 @@ class GetPublicAPI(APIView):
         params = {
             "service": API_KEY,
             "cpage": "1",  # 페이지
-            "rows": "10",  # 불러올 데이터 갯수
-            "shcate": "GGGA",  # 장르 코드
-            "prfstate": "01",  # 공연 상태
-            "prfpdfrom": "20220101",  # 공연 시작일
-            "prfpdto": "20220201",  # 공연 종료일
+            "rows": "30",  # 불러올 데이터 갯수
+            "shcate": shcate,  # 장르 코드
+            "prfstate": prfstate,  # 공연 상태
+            "prfpdfrom": prfpdfrom,  # 공연 시작일
+            "prfpdto": prfpdto,  # 공연 종료일
             "signgucode": "11",
         }
         response = requests.get(url, params=params)

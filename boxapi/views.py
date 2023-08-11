@@ -25,13 +25,10 @@ def del_data():
     thea_data = models.BoxTheater.objects.all()
     if mu_data:
         mu_data.delete()
-        print("wan")
     if thea_data:
         thea_data.delete()
-        print("wan")
     if not mu_data and not thea_data:
-        print("error")
-        return Response({"data": "데이터가 없습니다."})
+        return {"data": "데이터가 없습니다."}
 
 
 def get_musical():
