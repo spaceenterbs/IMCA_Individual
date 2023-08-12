@@ -34,7 +34,6 @@ class GetPublicAPI(APIView):
             "signgucode": "11",
         }
         response = requests.get(url, params=params)
-        print("response test: ", response)
         xmldata = xmltodict.parse(response.text)
         jsontext = json.dumps(xmldata["dbs"]["db"], ensure_ascii=False)
         return Response(jsontext)
@@ -43,9 +42,8 @@ class GetPublicAPI(APIView):
 class DetailAPI(APIView):
     def get(self, request):
         mt20id = request.GET["mt20id"]
-        url = f"http://www.kopis.or.kr/openApi/restful/pblprfr/{mt20id}"
-        params = {
-            "service": API_KEY,
-        }
-        response = requests.get(url, params=params)
+        url = (
+            f"http://www.kopis.or.kr/openApi/restful/pblprfr/{mt20id}/service={API_KEY}"
+        )
+        response = requests.get(url)
         return Response(response)
