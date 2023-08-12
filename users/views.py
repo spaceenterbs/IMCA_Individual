@@ -8,6 +8,8 @@ from .models import User
 from . import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import check_password
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
+from drf_spectacular.types import OpenApiTypes
 
 
 class UserRegister(APIView):
@@ -15,6 +17,27 @@ class UserRegister(APIView):
     회원가입 API
     """
 
+    @extend_schema(
+        tags=["회원가입"],
+        description="회원가입",
+        responses=serializers.RegisterSerializer,
+        examples=[
+            OpenApiExample(
+                response_only=True,
+                summary="회원가입입니다.",
+                name="Register",
+                value={
+                    "login_id": "아이디",
+                    "email": "이메일",
+                    "password": "패스워드",
+                    "nickname": "닉네임",
+                    "profileImg": "이미지URL",
+                    "gender": "성별",
+                    "name": "이름",
+                },
+            ),
+        ],
+    )
     def post(self, request):
         serializer = serializers.RegisterSerializer(data=request.data)
         if serializer.is_valid():

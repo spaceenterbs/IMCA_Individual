@@ -9,6 +9,7 @@ from rest_framework import status
 from django.utils import timezone
 from datetime import timedelta
 from django.conf import settings
+from drf_spectacular.utils import extend_schema
 
 logger = logging.getLogger(__name__)
 
@@ -28,13 +29,12 @@ def del_data():
     if thea_data:
         thea_data.delete()
     if not mu_data and not thea_data:
-        return {"data": "데이터가 없습니다."}
+        print({"data": "데이터가 없습니다."})
 
 
 def get_musical():
-    url = "http://kopis.or.kr/openApi/restful/boxoffice"
+    url = f"http://kopis.or.kr/openApi/restful/boxoffice?service={API_KEY}"
     params = {
-        "service": API_KEY,
         "area": "11",
         "ststype": "week",
         "catecode": "GGGA",
@@ -65,9 +65,8 @@ def get_musical():
 
 
 def get_theater():
-    url = "http://kopis.or.kr/openApi/restful/boxoffice"
+    url = f"http://kopis.or.kr/openApi/restful/boxoffice?service={API_KEY}"
     params = {
-        "service": API_KEY,
         "area": "11",
         "ststype": "week",
         "catecode": "AAAA",
@@ -102,6 +101,10 @@ class MusicalBoxoffice(APIView):
     뮤지컬 박스 오피스 가져오기 API
     """
 
+    @extend_schema(
+        tags=["뮤지컬 박스 오피스"],
+        description="뮤지컬 박스 오피스",
+    )
     def get(self, request):
         musical_data = models.BoxMusical.objects.all()
         serializer = serializers.MusicalSerializer(musical_data, many=True)
@@ -113,6 +116,10 @@ class TheaterBoxOffice(APIView):
     연극 박스 오피스 가져오기 API
     """
 
+    @extend_schema(
+        tags=["연극 박스 오피스"],
+        description="연극 박스 오피스",
+    )
     def get(self, request):
         theater_data = models.BoxTheater.objects.all()
         serializer = serializers.TheaterSerializer(theater_data, many=True)
