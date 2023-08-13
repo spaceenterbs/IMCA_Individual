@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import PrivateCalendar, Memo
+from .models import Calendar, Memo
 
 
 class MemoSerializer(serializers.ModelSerializer):
@@ -10,17 +10,15 @@ class MemoSerializer(serializers.ModelSerializer):
 
 class SemiInfoSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PrivateCalendar
+        model = Calendar
         fields = (
             "start_date",
             "end_date",
             "name",
-            "state",
-            "genre",
         )
 
 
 class DetailInfoSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PrivateCalendar
+        model = Calendar
         fields = "__all__"

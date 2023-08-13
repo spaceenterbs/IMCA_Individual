@@ -67,6 +67,22 @@ class UserAuth(APIView):
     로그인 기능
     """
 
+    @extend_schema(
+        tags=["로그인"],
+        description="로그인",
+        responses=serializers.RegisterSerializer,
+        examples=[
+            OpenApiExample(
+                response_only=True,
+                summary="로그인입니다..",
+                name="Login",
+                value={
+                    "login_id": "아이디",
+                    "password": "패스워드",
+                },
+            ),
+        ],
+    )
     def post(self, request):
         login_id = request.data.get("login_id")
         password = request.data.get("password")
@@ -100,6 +116,18 @@ class UserAuth(APIView):
             return res
         return Response({"user": user}, status=status.HTTP_400_BAD_REQUEST)
 
+    @extend_schema(
+        tags=["로그아웃"],
+        description="로그아웃",
+        responses=serializers.RegisterSerializer,
+        examples=[
+            OpenApiExample(
+                response_only=True,
+                summary="로그아웃입니다...",
+                name="Logout",
+            ),
+        ],
+    )
     def delete(self, request):
         """
         로그아웃
