@@ -24,7 +24,7 @@ def get_env_variable(var_name):
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = get_env_variable("SECRET_KEY")
 API_KEY = get_env_variable("API_KEY")
-
+SERVER_API_KEY = get_env_variable("SERVER_API_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 

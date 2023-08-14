@@ -19,6 +19,7 @@ def get_time():
 
 
 API_KEY = settings.API_KEY
+SERVER_API_KEY = settings.SERVER_API_KEY
 
 
 def del_data():
@@ -33,7 +34,7 @@ def del_data():
 
 
 def get_musical():
-    url = f"http://kopis.or.kr/openApi/restful/boxoffice?service={API_KEY}"
+    url = f"http://kopis.or.kr/openApi/restful/boxoffice?service={SERVER_API_KEY}"
     params = {
         "area": "11",
         "ststype": "week",
@@ -65,7 +66,7 @@ def get_musical():
 
 
 def get_theater():
-    url = f"http://kopis.or.kr/openApi/restful/boxoffice?service={API_KEY}"
+    url = f"http://kopis.or.kr/openApi/restful/boxoffice?service={SERVER_API_KEY}"
     params = {
         "area": "11",
         "ststype": "week",

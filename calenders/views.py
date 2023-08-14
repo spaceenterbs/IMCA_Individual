@@ -16,6 +16,7 @@ class Calendarinfo(APIView):
     @extend_schema(
         tags=["마이 캘린더 일정"],
         description="마이 캘린더 일정",
+        response=serializers.SemiInfoSerializer,
     )
     def get(self, request):
         calendar = Calendar.objects.filter(owner=request.user)
@@ -59,6 +60,7 @@ class CalendarDetail(APIView):
     @extend_schema(
         tags=["디테일 일정"],
         description="디테일 일정",
+        response=serializers.DetailInfoSerializer,
         parameters=[
             OpenApiParameter(
                 name="pk",
@@ -86,6 +88,7 @@ class Memoapi(APIView):
     @extend_schema(
         tags=["메모 가져오기"],
         description=["pk 값으로 캘린더 가져옵니다"],
+        response=serializers.MemoSerializer,
     )
     def get(self, request, pk):
         calendar = self.get_cal(pk)
