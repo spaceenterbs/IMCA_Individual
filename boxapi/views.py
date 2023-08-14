@@ -32,11 +32,9 @@ def del_data():
         thea_data.delete()
     if not mu_data and not thea_data:
         print({"data": "데이터가 없습니다."})
-    time.sleep(5)
 
 
 def get_musical():
-    time.sleep(15)
     url = f"http://kopis.or.kr/openApi/restful/boxoffice?service={SERVER_API_KEY}"
     params = {
         "area": "11",
@@ -46,7 +44,7 @@ def get_musical():
         + str(get_time().date().month).zfill(2)
         + str(get_time().date().day),
     }
-    response = requests.get(url, params=params)
+    response = requests.get(url, params=params, timeout=5)
     xmldata = xmltodict.parse(response.text)
     listdata = list(xmldata["boxofs"]["boxof"])
     for data in listdata[0:10]:
@@ -69,7 +67,6 @@ def get_musical():
 
 
 def get_theater():
-    time.sleep(30)
     url = f"http://kopis.or.kr/openApi/restful/boxoffice?service={SERVER_API_KEY}"
     params = {
         "area": "11",
@@ -79,7 +76,7 @@ def get_theater():
         + str(get_time().date().month).zfill(2)
         + str(get_time().date().day),
     }
-    response = requests.get(url, params=params)
+    response = requests.get(url, params=params, timeout=10)
     xmldata = xmltodict.parse(response.text)
     listdata = list(xmldata["boxofs"]["boxof"])
     for data in listdata[0:10]:
