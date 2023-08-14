@@ -70,7 +70,7 @@ class UserAuth(APIView):
     @extend_schema(
         tags=["로그인"],
         description="로그인",
-        response=serializers.UserSerializer,
+        responses=serializers.UserSerializer,
         examples=[
             OpenApiExample(
                 response_only=True,
