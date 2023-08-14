@@ -50,7 +50,7 @@ THIRDPARTY_APPS = [
     "drf_spectacular",
     "django_apscheduler",
     "xmltodict",
-    "sslserver",
+    # "sslserver",
 ]
 
 DEFAULT_APPS = [
