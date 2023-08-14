@@ -44,7 +44,7 @@ def get_musical():
         + str(get_time().date().month).zfill(2)
         + str(get_time().date().day),
     }
-    response = requests.get(url, params=params, timeout=5)
+    response = requests.get(url, params=params, timeout=30)
     xmldata = xmltodict.parse(response.text)
     listdata = list(xmldata["boxofs"]["boxof"])
     for data in listdata[0:10]:
@@ -76,7 +76,7 @@ def get_theater():
         + str(get_time().date().month).zfill(2)
         + str(get_time().date().day),
     }
-    response = requests.get(url, params=params, timeout=10)
+    response = requests.get(url, params=params, timeout=30)
     xmldata = xmltodict.parse(response.text)
     listdata = list(xmldata["boxofs"]["boxof"])
     for data in listdata[0:10]:
