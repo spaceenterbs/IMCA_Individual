@@ -1,6 +1,7 @@
 import logging
 import requests, json, xmltodict
 import datetime
+import time
 from . import models
 from . import serializers
 from rest_framework.response import Response
@@ -31,9 +32,11 @@ def del_data():
         thea_data.delete()
     if not mu_data and not thea_data:
         print({"data": "데이터가 없습니다."})
+    time.sleep(5)
 
 
 def get_musical():
+    time.sleep(15)
     url = f"http://kopis.or.kr/openApi/restful/boxoffice?service={SERVER_API_KEY}"
     params = {
         "area": "11",
@@ -66,6 +69,7 @@ def get_musical():
 
 
 def get_theater():
+    time.sleep(30)
     url = f"http://kopis.or.kr/openApi/restful/boxoffice?service={SERVER_API_KEY}"
     params = {
         "area": "11",
