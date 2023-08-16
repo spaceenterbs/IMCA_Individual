@@ -30,6 +30,7 @@ urlpatterns = [
     path("api/v1/users/", include("users.urls")),
     path("api/v1/youtube_videos/", include("youtube_videos.urls")),
     path("api/v1/calendar/", include("calenders.urls")),
+    path("api/v1/report/", include("reports.urls")),
     path("API/", include("apis.urls")),
     path("boxoffice/", include("boxapi.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

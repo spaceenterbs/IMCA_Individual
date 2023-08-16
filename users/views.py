@@ -6,7 +6,7 @@ from rest_framework.exceptions import ParseError, NotFound
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import User
 from . import serializers
-from django.contrib.auth import authenticate
+from django.contrib.auth import login, logout
 from django.contrib.auth.hashers import check_password
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
@@ -113,6 +113,7 @@ class UserAuth(APIView):
             )
             res.set_cookie("access", access_token, httponly=True)
             res.set_cookie("refresh", refresh_token, httponly=True)
+            login(request, user)
             return res
         return Response({"user": user}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -135,4 +136,5 @@ class UserAuth(APIView):
         res = Response({"message": "로그아웃 되었습니다."}, status=status.HTTP_200_OK)
         res.delete_cookie("access")
         res.delete_cookie("refresh")
+        logout(request)
         return res

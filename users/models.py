@@ -78,7 +78,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         MALE = ("male", "Male")
         FEMALE = ("female", "Female")
 
-    nickname = models.CharField(max_length=30, unique=True, null=False, blank=False)
+    nickname = models.CharField(max_length=10, unique=True, null=False, blank=False)
     login_id = models.CharField(max_length=30, unique=True, null=False, blank=False)
     profileImg = models.ImageField(null=True, blank=True)
     email = models.CharField(max_length=30, unique=True, null=False, blank=False)
@@ -86,12 +86,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=10, null=False, blank=False)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_ad = models.DateTimeField(auto_now=True)
 
-    @property
-    def is_staff(self):
-        return self.is_admin
+    # @property
+    # def is_staff(self):
+    #     return self.is_admin
 
     objects = UserManager()
 
