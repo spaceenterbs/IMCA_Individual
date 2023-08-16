@@ -63,10 +63,10 @@ class BoardDetail(APIView):
         board.delete()
         return Response(status=HTTP_204_NO_CONTENT)
 
-    def patch(self, request, pk):
-        board = self.get_object(pk)
-        serializer = BoardSerializer(board, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+    # def patch(self, request, pk):
+    #     board = self.get_object(pk)
+    #     serializer = BoardSerializer(board, data=request.data, partial=True)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data)
+    #     return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
