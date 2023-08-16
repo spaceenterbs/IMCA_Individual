@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Board
@@ -12,6 +13,12 @@ from rest_framework.status import (
 
 
 class Boards(APIView):
+    @extend_schema(
+        tags=["게시판 게시글 API"],
+        summary="게시글 리스트를 가져옴",
+        description="게시판의 모든 게시글을 가져온다.",
+        responses={200: BoardSerializer(many=True)},
+    )
     def get(self, request):
         # category = request.query_params.get("category", None)
         # if category is not None:
@@ -22,6 +29,13 @@ class Boards(APIView):
         serializer = BoardSerializer(boards, many=True)
         return Response(serializer.data)
 
+    @extend_schema(
+        tags=["게시판 게시글 API"],
+        summary="게시글을 만든다.",
+        description="새로운 게시글을 만든다.",
+        request=BoardSerializer,
+        responses={201: BoardSerializer()},
+    )
     def post(self, request):
         try:
             serializer = BoardSerializer(data=request.data)
@@ -43,6 +57,12 @@ class BoardDetail(APIView):
         except Exception as e:
             raise e
 
+    @extend_schema(
+        tags=["게시판 게시글 API"],
+        summary="상세 게시글을 가져옴.",
+        description="게시글의 상세 내용을 가져온다.",
+        responses={200: BoardSerializer()},
+    )
     def get(self, request, pk):
         board = self.get_object(pk)
         board.views += 1  # 조회수 증가
@@ -50,6 +70,13 @@ class BoardDetail(APIView):
         serializer = BoardSerializer(board)
         return Response(serializer.data)
 
+    @extend_schema(
+        tags=["게시판 게시글 API"],
+        summary="게시글을 수정함.",
+        description="게시글을 수정한다.",
+        request=BoardSerializer,
+        responses={200: BoardSerializer()},
+    )
     def put(self, request, pk):
         board = self.get_object(pk)
         serializer = BoardSerializer(board, data=request.data)
@@ -58,6 +85,12 @@ class BoardDetail(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
+    @extend_schema(
+        tags=["게시판 게시글 API"],
+        summary="게시글 삭제",
+        description="게시글을 삭제한다.",
+        responses={204: "No Content"},
+    )
     def delete(self, request, pk):
         board = self.get_object(pk)
         board.delete()
