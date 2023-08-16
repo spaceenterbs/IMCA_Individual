@@ -6,11 +6,11 @@ from . import views
 def start():
     scheduler = BackgroundScheduler()
 
-    @scheduler.scheduled_job("cron", minute="*/5", id="delete")
+    @scheduler.scheduled_job("cron", day_of_week="mon", hour="12", id="delete")
     def auto_del_data():
         views.del_data()
 
-    @scheduler.scheduled_job("cron", minute="*/5", id="musical")
+    @scheduler.scheduled_job("cron", day_of_week="mon", hour="12", id="musical")
     def auto_get_musical():
         try:
             views.get_musical()
@@ -18,7 +18,7 @@ def start():
             time.sleep(10)
             views.get_musical()
 
-    @scheduler.scheduled_job("cron", minute="*/5", id="theater")
+    @scheduler.scheduled_job("cron", day_of_week="mon", hour="12", id="theater")
     def auto_get_theater():
         try:
             views.get_theater()

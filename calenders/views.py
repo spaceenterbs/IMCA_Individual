@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.permissions import IsAuthenticated
 from .models import Calendar
 from users.models import User
@@ -71,9 +71,23 @@ class CalendarDetail(APIView):
         ],
     )
     def get(self, request, pk):
-        calendar = Calendar.objects.get(pk=pk, owner=request.user)
+        calendar = Calendar.objects.get(pk=pk)
+        if calendar.owner != request.user:
+            raise PermissionError
         serializer = serializers.DetailInfoSerializer(calendar)
         return Response(serializer.data)
+
+    @extend_schema(
+        tags=["일정 삭제"],
+        description="일정 삭제",
+    )
+    def delete(self, request, pk):
+        calendar = Calendar.objects.get(pk=pk)
+        if calendar.owner != request.user:
+            raise PermissionError
+
+        calendar.delete()
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 class Memoapi(APIView):
@@ -92,9 +106,9 @@ class Memoapi(APIView):
     )
     def get(self, request, pk):
         calendar = self.get_cal(pk)
-        print(calendar.memos.all())
-        memo = Memo.objects.filter(calendar=calendar)
-        serializer = serializers.MemoSerializer(memo)
+        memo = calendar.memos.all()
+        # memo = Memo.objects.filter(calendar=calendar)
+        serializer = serializers.MemoSerializer(memo, many=True)
         return Response(serializer.data)
 
     @extend_schema(
@@ -123,9 +137,63 @@ class Memoapi(APIView):
         serializer = serializers.MemoSerializer(datas)
         return Response(serializer.data)
 
+
+class MemoDetail(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_cal(self, pk):
+        try:
+            return Calendar.objects.get(pk=pk)
+        except Calendar.DoesNotExist:
+            raise NotFound
+
+    def get_memo(self, memo_pk, cal):
+        try:
+            return Memo.objects.get(pk=memo_pk, calendar=cal)
+        except:
+            raise NotFound
+
+    @extend_schema(
+        tags=["메모 수정"],
+        description="메모 수정",
+        responses=serializers.MemoSerializer,
+        examples=[
+            OpenApiExample(
+                response_only=True,
+                summary="메모 수정 입니다.",
+                name="memo",
+                value={
+                    "title": "제목",
+                    "content": "내용",
+                },
+            ),
+        ],
+    )
+    def put(self, request, pk, memo_pk):
+        cal = self.get_cal(pk)
+        memo = self.get_memo(memo_pk, cal)
+        if cal.owner != request.user:
+            raise PermissionError
+        serializer = serializers.MemoSerializer(
+            memo,
+            data=request.data,
+            partial=True,
+        )
+        serializer.is_valid(raise_exception=True)
+        update = serializer.save()
+        return Response(serializers.MemoSerializer(update).data)
+
     @extend_schema(
         tags=["메모 삭제"],
-        description=["메모 삭제 기능"],
+        description="메모 삭제",
     )
-    def delete(self, request, pk):
-        memo = Memo.objects.get(pk=pk)
+    def delete(self, request, pk, memo_pk):
+        cal = self.get_cal(pk)
+        memo = self.get_memo(memo_pk, cal)
+        if cal.owner != request.user:
+            raise PermissionError
+        try:
+            memo.delete()
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        except:
+            raise ParseError("삭제 실패")
