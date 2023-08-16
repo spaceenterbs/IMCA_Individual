@@ -41,12 +41,12 @@ class Youtube_VideoDetail(APIView):
             return Response(status=HTTP_404_NOT_FOUND)
 
     def get(self, request, pk):
-        youtube_video = self.get_object(pk)
         # 쿠키에서 이미 조회한 비디오의 목록을 가져옴
         youtube_video = self.get_object(pk)
         viewed_videos = request.COOKIES.get("viewed_videos", "").split(",")
         if str(pk) not in viewed_videos:
             Youtube_Video.objects.filter(pk=pk).update(views_count=F("views_count") + 1)
+            # 데이터베이스에는 +1이 되었지만, serializer.data에는 반영이 안되어 있음
             viewed_videos.append(str(pk))
         # youtube_video.views_count += 1  # Increase the views_count
         # youtube_video.save()  # Save the changes to the database
