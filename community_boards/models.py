@@ -8,7 +8,7 @@ class Board(CommonModel):
         후기 = ("after", "후기")
         양도 = ("trade", "양도")
 
-    title = models.CharField(max_length=30, null=False, blank=False)
+    title = models.CharField(max_length=15, null=False, blank=False)
     content = models.TextField(null=False, blank=False)
     is_block = models.BooleanField(default=False)
     photo = models.URLField(blank=True, null=True)

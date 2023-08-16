@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .models import Bigreview
 
-# Register your models here.
+
+@admin.register(Bigreview)
+class CalendarAdmin(admin.ModelAdmin):
+    list_display = ("__str__",)

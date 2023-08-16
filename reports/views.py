@@ -15,10 +15,56 @@ from bigreviews.models import Bigreview
 class SaveReport(APIView):
     @extend_schema(tags=["신고하기"], description="신고하기")
     def post(self, request):
-        report = serializers.ReportSerializer(data=request.data)
+        report = serializers.ReportSerializer(
+            data=request.data,
+        )
         report.is_valid(raise_exception=True)
-        data = report.save(author=request.user)
-        return Response(serializers.ReportSerializer(data).data)
+        if request.data["category"] == Report.ReportCategoryChoices.게시글:
+            content_pk = request.data["target_pk"]
+            content = Board.objects.get(pk=content_pk)
+            report.target_content = content.content
+            report.target_title = content.title
+            data = {
+                "content": report.target_content,
+                "title": report.target_title,
+            }
+            report = report.save(
+                author=request.user,
+                target_content=data["content"],
+                target_title=data["title"],
+            )
+
+        if request.data["category"] == Report.ReportCategoryChoices.댓글:
+            content_pk = request.data["target_pk"]
+            content = Review.objects.get(pk=content_pk)
+            report.target_content = content.content
+            report.target_title = None
+            data = {
+                "content": report.target_content,
+                "title": report.target_title,
+            }
+            report = report.save(
+                author=request.user,
+                target_content=data["content"],
+                target_title=data["title"],
+            )
+
+        if request.data["category"] == Report.ReportCategoryChoices.대댓글:
+            content_pk = request.data["target_pk"]
+            content = Bigreview.objects.get(pk=content_pk)
+            report.target_content = content.content
+            report.target_title = None
+            data = {
+                "content": report.target_content,
+                "title": report.target_title,
+            }
+            report = report.save(
+                author=request.user,
+                target_content=data["content"],
+                target_title=data["title"],
+            )
+
+        return Response(serializers.ReportSerializer(report).data)
 
 
 class ViewReport(APIView):
@@ -30,15 +76,25 @@ class ViewReport(APIView):
         except Report.DoesNotExist:
             raise NotFound
 
+    @extend_schema(tags=["신고하기"], description="신고하기")
     def get(self, request, pk):
         report = self.get_report(pk)
-        serializer = serializers.DetailReportSerializer(
-            report,
-            context={"request": request},
-        )
+        serializer = serializers.DetailReportSerializer(report)
         return Response(serializer.data)
 
+    @extend_schema(tags=["신고하기"], description="신고하기")
     def delete(self, request, pk):
         report = self.get_report(pk)
-        report.delete()
-        return Response(status=status.HTTP_404_NOT_FOUND)
+        if report.category == Report.ReportCategoryChoices.게시글:
+            board = Board.objects.get(pk=report.target_pk)
+            board.delete()
+            report.delete()
+        if report.category == Report.ReportCategoryChoices.댓글:
+            review = Review.objects.get(pk=report.target_pk)
+            review.delete()
+            report.delete()
+        if report.category == Report.ReportCategoryChoices.대댓글:
+            big_review = Bigreview.objects.get(pk=report.target_pk)
+            big_review.delete()
+            report.delete()
+        return Response({"ok": status.HTTP_404_NOT_FOUND})

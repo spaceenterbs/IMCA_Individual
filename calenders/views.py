@@ -24,7 +24,7 @@ class Calendarinfo(APIView):
         return Response(serializer.data)
 
     @extend_schema(
-        tags=["마이 캘린더 일정 추가"],
+        tags=["마이 캘린더 일정"],
         description="마이 캘린더 일정 추가",
         responses=serializers.DetailInfoSerializer,
         examples=[
@@ -78,7 +78,7 @@ class CalendarDetail(APIView):
         return Response(serializer.data)
 
     @extend_schema(
-        tags=["일정 삭제"],
+        tags=["디테일 일정"],
         description="일정 삭제",
     )
     def delete(self, request, pk):

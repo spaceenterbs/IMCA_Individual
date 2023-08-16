@@ -49,5 +49,6 @@ class Report(models.Model):
     )
     reason = models.TextField()
     target_user = models.CharField(max_length=30)
+    target_title = models.CharField(max_length=15, null=True, blank=True)
     target_content = models.TextField()
     target_pk = models.PositiveIntegerField()
