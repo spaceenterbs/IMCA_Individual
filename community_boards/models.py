@@ -47,7 +47,8 @@ class Board(CommonModel):
         """
         Get the number of users who liked this board.
         """
-        return self.likes_num.count()
+        # return self.likes_num.all().count() # for many to many field
+        return self.likes_num  # for PositiveIntegerField
 
     def get_review_num(self):
         reviews_count = Review.objects.filter(board=self).count()
