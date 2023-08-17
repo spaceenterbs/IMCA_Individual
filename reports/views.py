@@ -97,4 +97,4 @@ class ViewReport(APIView):
             big_review = Bigreview.objects.get(pk=report.target_pk)
             big_review.delete()
             report.delete()
-        return Response({"ok": status.HTTP_404_NOT_FOUND})
+        return Response({"ok": status.HTTP_204_NO_CONTENT})
