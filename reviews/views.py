@@ -69,7 +69,7 @@ class ReviewDetail(APIView):
         review = self.get_object(pk)
         serializer = ReviewSerializer(review, data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(author=request.user)
             return Response(serializer.data)
         return Response(serializer.errors)
 

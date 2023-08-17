@@ -40,7 +40,7 @@ class Boards(APIView):
         try:
             serializer = BoardSerializer(data=request.data)
             if serializer.is_valid():
-                content = serializer.save()
+                content = serializer.save(author=request.user)
                 return Response(BoardSerializer(content).data, status=HTTP_201_CREATED)
             else:
                 return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
