@@ -38,7 +38,7 @@ class Bigreviews(APIView):
         try:
             serializer = BigreviewSerializer(data=request.data)
             if serializer.is_valid():
-                content = serializer.save()
+                content = serializer.save(author=request.user)
                 return Response(
                     BigreviewSerializer(content).data, status=HTTP_201_CREATED
                 )
