@@ -4,4 +4,4 @@ from .models import Youtube_Video
 
 @admin.register(Youtube_Video)
 class Youtube_VideoAdmin(admin.ModelAdmin):
-    pass
+    list_display = ("__str__",)
