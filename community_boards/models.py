@@ -20,9 +20,9 @@ class Board(CommonModel):
     content = models.TextField(null=False, blank=False)
     category = models.CharField(max_length=12, choices=CategoryTypeChoices.choices)
     views = models.PositiveIntegerField(default=0)
-    likes_num = models.PositiveIntegerField(default=0)
-    # likes_num = models.ManyToManyField(User, related_name="likes_num", default=0)
-    # reviews_num = models.ManyToManyField(Review, related_name="reviews_num", default=0)
+    # likes_num = models.PositiveIntegerField(default=0)
+    likes_num = models.ManyToManyField(User, related_name="likes_num", blank=True)
+    # reviews_num = models.ManyToManyField(Review, related_name="reviews_num", blank=True)
 
     def __str__(self):
         return self.title
@@ -31,7 +31,7 @@ class Board(CommonModel):
         """
         Add an user to the likes_num field.
         """
-        if user not in self.likes_num.all():
+        if not self.likes_num.filter(pk=user.pk).exists():
             self.likes_num.add(user)
             self.save()
 
@@ -39,7 +39,7 @@ class Board(CommonModel):
         """
         Remove an user from the likes_num field.
         """
-        if user in self.likes_num.all():
+        if self.likes_num.filter(pk=user.pk).exists():
             self.likes_num.remove(user)
             self.save()
 
