@@ -194,3 +194,8 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
 }
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://port-0-imca-3prof2llkuol0db.sel4.cloudtype.app/",
+    "https://*.127.0.0.1",
+]
