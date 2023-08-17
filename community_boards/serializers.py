@@ -15,8 +15,8 @@ class BoardSerializer(ModelSerializer):
         model = Board
         fields = "__all__"
 
-    def get_likes_num(self, obj):
-        return obj.likes_num.count()
+    def get_likes_num(self, board):
+        return board.likes_num.count()
 
-    def get_reviews_num(self, obj):
-        return obj.reviews_num()  # Use the model method to calculate reviews_num
+    def get_reviews_num(self, board):
+        return board.reviews_num  # Use the model method to calculate reviews_num
