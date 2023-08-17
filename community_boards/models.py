@@ -20,8 +20,8 @@ class Board(CommonModel):
     content = models.TextField(null=False, blank=False)
     category = models.CharField(max_length=12, choices=CategoryTypeChoices.choices)
     views = models.PositiveIntegerField(default=0)
-    # likes_num = models.PositiveIntegerField(default=0)
-    likes_num = models.ManyToManyField(User, related_name="likes_num", blank=True)
+    likes_num = models.PositiveIntegerField(default=0)
+    # likes_num = models.ManyToManyField(User, related_name="likes_num", default=0)
     # reviews_num = models.ManyToManyField(Review, related_name="reviews_num", blank=True)
 
     def __str__(self):
