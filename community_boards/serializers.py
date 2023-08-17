@@ -9,7 +9,12 @@ class BoardSerializer(ModelSerializer):
 
     class Meta:
         model = Board
-        fields = "__all__"
+        exclude = (
+            "author",
+            "likes_num",
+            "reviews_num",
+            "views",
+        )
 
     def get_likes_num(self, obj):
         return obj.likes_num.count()
