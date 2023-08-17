@@ -1,3 +1,4 @@
+from rest_framework.pagination import PageNumberPagination
 from drf_spectacular.utils import extend_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -12,7 +13,15 @@ from rest_framework.status import (
 )
 
 
+class CustomPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
+
 class Boards(APIView):
+    pagination_class = CustomPagination()
+
     @extend_schema(
         tags=["게시판 게시글 API"],
         summary="게시글 리스트를 가져옴",
@@ -20,12 +29,11 @@ class Boards(APIView):
         responses={200: BoardSerializer(many=True)},
     )
     def get(self, request):
-        # category = request.query_params.get("category", None)
-        # if category is not None:
-        #     boards = Board.objects.filter(category=category)
-        # else:
-        #     boards = Board.objects.all()
         boards = Board.objects.all()
+        page = self.pagination_class.paginate_queryset(boards, request)
+        if page is not None:
+            serializer = BoardSerializer(page, many=True)
+            return self.pagination_class.get_paginated_response(serializer.data)
         serializer = BoardSerializer(boards, many=True)
         return Response(serializer.data)
 
