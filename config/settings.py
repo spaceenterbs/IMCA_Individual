@@ -196,6 +196,8 @@ SPECTACULAR_SETTINGS = {
 }
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://port-0-imca-3prof2llkuol0db.sel4.cloudtype.app/",
+    "https://*.port-0-imca-3prof2llkuol0db.sel4.cloudtype.app/",
     "https://*.127.0.0.1",
 ]
+
+CSRF_COOKIE_SECURE = False  # 나중에 지워야함
