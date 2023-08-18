@@ -1,22 +1,28 @@
-from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from .models import Board
+from rest_framework.serializers import ModelSerializer
 from users.serializers import SemiUserSerializer
 
 
 class BoardSerializer(ModelSerializer):
     author = SemiUserSerializer(read_only=True)
-    likes_num = serializers.SerializerMethodField()
-    reviews_num = serializers.SerializerMethodField()
+    likes_count = serializers.SerializerMethodField()  # 추가된 필드
+    reviews_count = serializers.SerializerMethodField()  # 추가된 필드
 
     class Meta:
         model = Board
         fields = "__all__"
 
-    def get_likes_num(self, obj):
-        if obj.likes_num is not None:
-            return obj.likes_num.all().count()
-        return 0  # Default value if likes_num is None
+    def get_likes_count(self, obj):
+        return obj.get_likes_count()  # Board 모델의 get_likes_count 함수 호출
 
-    def get_reviews_num(self, obj):  # 수정: obj 인자 사용
-        return obj.get_reviews_count()  # Use the model method to calculate reviews_num
+    def get_reviews_count(self, obj):
+        return obj.get_reviews_count()  # Board 모델의 get_reviews_count 함수 호출
+
+
+"""
+위의 코드에서 'likes_count'와 'reviews_count' 필드는 serializer의 'SerializerMethodField'를 사용하여 추가되었다.
+각 필드의 값을 계산하기 위해 'get_likes_count'와 'get_reviews_count' 함수를 호출하고, 이러한 값을 API 응답에서 사용할 수 있게 된다.
+
+# 따라서 이렇게하면 필드에 값을 저장하지 않고도 게시글의 좋아요 수와 리뷰 수를 API 응답에서 뿌려줄 수 있다.
+"""
