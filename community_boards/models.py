@@ -1,5 +1,7 @@
+# from django.forms import CheckboxSelectMultiple
 from django.db import models
 from common.models import CommonModel
+
 from users.models import User
 from reviews.models import Review
 from bigreviews.models import Bigreview
@@ -7,46 +9,78 @@ from bigreviews.models import Bigreview
 
 class Board(CommonModel):
     class CategoryType(models.TextChoices):
-        자유 = ("free", "자게")
+        자게 = ("free", "자게")
         후기 = ("after", "후기")
         양도 = ("trade", "양도")
 
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="boards")
+    author = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE,
+        related_name="boards_user",  # 사용자 입장에서 해당 사용자가 작성한 게시글들을 가져올 때 사용할 이름
+    )
     photo = models.URLField(blank=True, null=True)  # 이미지
     # file = models.FileField(upload_to="file", blank=True)
     title = models.CharField(max_length=30, null=False, blank=False)
     content = models.TextField(null=False, blank=False)
     category = models.CharField(max_length=12, choices=CategoryType.choices)
     views = models.PositiveIntegerField(default=0)
-    likes_num = models.PositiveIntegerField(default=0)
-    reviews_num = models.PositiveIntegerField(default=0)
+    likes_num = models.ManyToManyField(  # 게시글에 좋아요를 누른 사용자들
+        # 이 필드는 ManyToManyField로 선언되었습니다. 이것은 좋아요를 누른 사용자들과 게시글 간의 다대다 관계를 나타냅니다.
+        # 위의 코드에서는 blank=True로 설정하여 해당 필드가 비어있을 수 있다는 것을 허용하고, 사용자가 좋아요를 누르지 않은 경우에도 게시글을 생성할 수 있도록 합니다.
+        "users.User",
+        related_name="boards_liked",  # 사용자 입장에서 해당 사용자가 좋아요를 누른 게시글들을 가져올 때 사용할 이름
+        verbose_name="좋아요 목록",
+        blank=True,
+    )
+    reviews_num = models.ForeignKey(  # 게시글에 달린 댓글들
+        # 이 필드는 ForeignKey로 선언되었습니다. 이것은 각 게시글에 달린 댓글을 나타냅니다.
+        # Review 모델과 연결되는데, related_name을 사용하여 리뷰 입장에서 해당 게시글을 가져올 때 사용할 이름을 지정합니다. 이 필드도 blank=True, null=True로 설정하여 해당 필드가 비어있을 수 있도록 합니다.
+        "reviews.Review",
+        on_delete=models.CASCADE,
+        verbose_name="댓글 목록",
+        related_name="boards_reviewed",  # 댓글 입장에서 해당 댓글이 작성된 게시글들을 가져올 때 사용할 이름
+        blank=True,
+        null=True,
+    )
 
     def __str__(self):
         return self.title
 
-    def like(self, user):
-        """
-        Add an user to the likes_num field.
-        """
-        if not self.likes_num.filter(pk=user.pk).exists():
-            self.likes_num.add(user)
-            self.save()
+    def get_likes_count(self):  # likes_num 필드를 통해 해당 게시글이 받은 좋아요 수를 반환한다.
+        # self.likes_num_count()를 호출하여 해당 게시글의 좋아요 수를 계산하고 반환한다.
+        likes_count = (
+            self.likes_num.count()
+        )  # count() 메서드를 사용하여 해당 게시글의 좋아요 수를 계산하고 반환한다.
+        return likes_count
 
-    def unlike(self, user):
-        """
-        Remove an user from the likes_num field.
-        """
-        if self.likes_num.filter(pk=user.pk).exists():
-            self.likes_num.remove(user)
-            self.save()
+    def get_reviews_count(self):  # 현재 게시글과 연관된 리뷰 및 큰 리뷰의 개수를 계산하고 반환한다.
+        # Review 모델과 Bigreview 모델을 필터링하여 현재 게시글과 연관된 리뷰 및 큰 리뷰의 개수를 계산하고 반환한다.
+        ## 예를 들어 게시글 인스턴스 'my_board'에서 'my_board.get_reviews_count()'를 호출하면, 해당 게시글에 달린 리뷰와 큰 리뷰의 총 개수를 반환한다.
+        reviews_count = Review.objects.filter(board=self).count()
+        bigreviews_count = Bigreview.objects.filter(parent_review__board=self).count()
+        return reviews_count + bigreviews_count
 
-    # def get_likes_num(self):
+    """ 위의 두 함수를 'Board' 모델 클래스에 추가하면 게시글의 좋아요 수와 리뷰 수를 계산할 수 있다.
+    이 함수들은 모델 인스턴스 메서드로서, 해당 게시글 인스턴스에서 호출하여 사용할 수 있다."""
+
+    # def like(self, user):
     #     """
-    #     Get the number of users who liked this board.
+    #     Add an user to the likes_num field.
     #     """
-    #     return self.likes_num.all().count()  # for many to many field
-    #     # return self.likes_num  # for PositiveIntegerField
+    #     if not self.likes_num.filter(pk=user.pk).exists():
+    #         self.likes_num.add(user)
+    #         self.save()
 
+    # def unlike(self, user):
+    #     """
+    #     Remove an user from the likes_num field.
+    #     """
+    #     if self.likes_num.filter(pk=user.pk).exists():
+    #         self.likes_num.remove(user)
+    #         self.save()
+
+
+'''
     def get_review_num(self):
         reviews_count = Review.objects.filter(board=self).count()
         """
@@ -62,3 +96,4 @@ class Board(CommonModel):
         .count()는 필터링된 bigreview들의 개수를 반환한다.
         """
         return reviews_count + bigreviews_count
+'''

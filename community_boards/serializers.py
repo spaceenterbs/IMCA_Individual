@@ -6,17 +6,17 @@ from users.serializers import SemiUserSerializer
 
 class BoardSerializer(ModelSerializer):
     author = SemiUserSerializer(read_only=True)
-    likes_num = serializers.IntegerField()
+    likes_num = serializers.SerializerMethodField()
     reviews_num = serializers.SerializerMethodField()
-    # likes_num 필드는 User 모델과의 다대다 관계를 나타내는 필드이며, reviews_num 필드는 Review 모델과의 다대다 관계를 나타내는 필드입니다. 이러한 필드는 직렬화할 때 불필요한 정보를 노출시킬 수 있으므로,
-    # SerializerMethodField를 사용하여 필요한 정보만 계산하여 직렬화하도록 설정하는 것이 좋습니다.
 
     class Meta:
         model = Board
         fields = "__all__"
 
-    def get_likes_num(self, board):
-        return board.likes_num.count()
+    def get_likes_num(self, obj):
+        if obj.likes_num is not None:
+            return obj.likes_num.all().count()
+        return 0  # Default value if likes_num is None
 
-    def get_reviews_num(self, board):
-        return board.reviews_num  # Use the model method to calculate reviews_num
+    def get_reviews_num(self, obj):  # 수정: obj 인자 사용
+        return obj.get_reviews_count()  # Use the model method to calculate reviews_num
