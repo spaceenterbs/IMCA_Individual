@@ -11,6 +11,7 @@ from rest_framework.status import (
     HTTP_404_NOT_FOUND,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
+from rest_framework import status
 
 
 class CustomPagination(PageNumberPagination):
@@ -35,7 +36,20 @@ class Boards(APIView):
             serializer = BoardSerializer(page, many=True)
             return self.pagination_class.get_paginated_response(serializer.data)
         serializer = BoardSerializer(boards, many=True)
-        return Response(serializer.data)
+        res = serializer.data
+        next_url = "http://port-0-imca-3prof2llkuol0db.sel4.cloudtype.app/api/v1/community_board/?page=2"
+        previous_url = "http://port-0-imca-3prof2llkuol0db.sel4.cloudtype.app/api/v1/community_board/"
+
+        data = {
+            "count": boards.count(),
+            "next": next_url if next_url else None,
+            "previous": previous_url if previous_url else None,
+            "results": res,
+        }
+        return Response(data)
+
+        # return Response(data, status=status.HTTP_200_OK)
+        # return Response(serializer.data)
 
     @extend_schema(
         tags=["게시판 게시글 API"],

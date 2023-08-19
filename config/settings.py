@@ -197,4 +197,7 @@ SPECTACULAR_SETTINGS = {
 }
 
 CSRF_USE_SESSIONS = True
-CSRF_TRUSTED_ORIGINS = ("https://port-0-imca-3prof2llkuol0db.sel4.cloudtype.app",)
+CSRF_TRUSTED_ORIGINS = (
+    "https://port-0-imca-3prof2llkuol0db.sel4.cloudtype.app",
+    "https://port-0-imca-3prof2llkuok2wj.sel4.cloudtype.app",  # 8월 19일 토요일 방민식 배포
+)
