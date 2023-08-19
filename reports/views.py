@@ -67,7 +67,17 @@ class SaveReport(APIView):
         return Response(serializers.ReportSerializer(report).data)
 
 
-class ViewReport(APIView):
+class ReportView(APIView):
+    permission_classes = [IsAdminUser]
+
+    @extend_schema(tags=["신고하기"], description="신고하기")
+    def get(self, request):
+        report = Report.obejcts.all()
+        serializer = serializers.DetailReportSerializer(report)
+        return Response(serializer.data)
+
+
+class DetailViewReport(APIView):
     permission_classes = [IsAdminUser]
 
     def get_report(self, pk):
