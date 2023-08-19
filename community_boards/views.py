@@ -12,6 +12,8 @@ from rest_framework.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 from rest_framework import status
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 
 
 class CustomPagination(PageNumberPagination):
@@ -71,14 +73,6 @@ class Boards(APIView):
 
 
 class BoardDetail(APIView):
-    def get_object(self, pk):
-        try:
-            return Board.objects.get(pk=pk)
-        except Board.DoesNotExist:
-            return Response(status=HTTP_404_NOT_FOUND)
-        except Exception as e:
-            raise e
-
     @extend_schema(
         tags=["게시판 게시글 API"],
         summary="상세 게시글을 가져옴.",
@@ -118,6 +112,14 @@ class BoardDetail(APIView):
         board.delete()
         return Response(status=HTTP_204_NO_CONTENT)
 
+    def get_object(self, pk):
+        try:
+            return Board.objects.get(pk=pk)
+        except Board.DoesNotExist:
+            return Response(status=HTTP_404_NOT_FOUND)
+        except Exception as e:
+            raise e
+
     # def patch(self, request, pk):
     #     board = self.get_object(pk)
     #     serializer = BoardSerializer(board, data=request.data, partial=True)
@@ -125,3 +127,19 @@ class BoardDetail(APIView):
     #         serializer.save()
     #         return Response(serializer.data)
     #     return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+
+class BoardLike(APIView):
+    def post(self, request, board_id):
+        board = get_object_or_404(Board, id=board_id)
+        user = request.user
+
+        if user in board.likes_num.all():
+            board.likes_num.remove(user)
+        else:
+            board.likes_num.add(user)
+
+        url_next = request.GET.get("next") or reverse(
+            "community_boards:board_detail", args=[board_id]
+        )
+        return redirect(url_next)
