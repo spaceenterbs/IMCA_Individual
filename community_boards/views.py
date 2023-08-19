@@ -130,16 +130,35 @@ class BoardDetail(APIView):
 
 
 class BoardLike(APIView):
+    @extend_schema(
+        tags=["게시글 좋아요 API"],
+        summary="게시글 좋아요",
+        description="게시글에 좋아요를 누른다.",
+        responses={200: BoardSerializer()},
+    )
     def post(self, request, board_id):
+        # 게시글 객체를 가져옴
         board = get_object_or_404(Board, id=board_id)
+        # 현재 요청을 보낸 사용자
         user = request.user
 
+        # 사용자가 이미 좋아요를 눌렀다면 좋아요를 취소하고,
+        # 그렇지 않으면 좋아요를 추가
         if user in board.likes_num.all():
             board.likes_num.remove(user)
         else:
             board.likes_num.add(user)
 
-        url_next = request.GET.get("next") or reverse(
-            "community_boards:board_detail", args=[board_id]
-        )
-        return redirect(url_next)
+        # 페이지 이동 없이 현재 페이지에서 좋아요 토글 후 응답을 반환
+        return Response({"likes_num": board.likes_num.count()})
+
+        # # 다음에 이동할 URL을 설정
+        # url_next = request.GET.get("next") or reverse(
+        #     "community_boards:board_detail", args=[board_id]
+        # )
+        # # 해당 URL로 리다이렉트
+        # return redirect(url_next)
+
+        """
+        클라이언트가 게시글에 좋아요를 누를 때, 해당 게시글의 좋아요 상태를 토글하고, 사용자를 원래 페이지로 리다이렉트하는 기능을 구현한 것
+        """

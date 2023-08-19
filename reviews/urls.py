@@ -6,8 +6,8 @@ urlpatterns = [
         "",
         views.Reviews.as_view(),
     ),
-    path(
-        "<int:pk>/",
-        views.ReviewDetail.as_view(),
-    ),
+    # path(
+    #     "<int:pk>/",
+    #     views.ReviewDetail.as_view(),
+    # ),
 ]
