@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework.views import APIView
 from rest_framework.status import HTTP_404_NOT_FOUND
 from rest_framework.response import Response
@@ -14,11 +15,24 @@ from datetime import datetime, timedelta
 
 
 class Youtube_Videos(APIView):
+    @extend_schema(
+        tags=["youtube_videos 게시글 API"],
+        summary="youtube_videos 게시글 리스트를 가져옴",
+        description="youtube_videos 게시판의 모든 게시글을 가져온다.",
+        responses={200: Youtube_VideoSerializer(many=True)},
+    )
     def get(self, request):
         youtube_videos = Youtube_Video.objects.all()
         serializer = Youtube_VideoSerializer(youtube_videos, many=True)
         return Response(serializer.data)
 
+    @extend_schema(
+        tags=["youtube_videos 게시글 API"],
+        summary="youtube_videos 게시글을 만듦",
+        description="새로운 youtube_videos 게시글을 만든다.",
+        request=Youtube_VideoSerializer,
+        responses={201: Youtube_VideoSerializer()},
+    )
     def post(self, request):
         try:
             serializer = Youtube_VideoSerializer(data=request.data)
@@ -34,12 +48,13 @@ class Youtube_Videos(APIView):
 
 
 class Youtube_VideoDetail(APIView):
-    def get_object(self, pk):
-        try:
-            return Youtube_Video.objects.get(pk=pk)
-        except Youtube_Video.DoesNotExist:
-            return Response(status=HTTP_404_NOT_FOUND)
-
+    @extend_schema(
+        tags=["youtube_videos 게시글 API"],
+        summary="youtube_videos 상세 게시글을 가져옴.",
+        description="youtube_videos 상세 게시글을 가져온다.",
+        request=Youtube_VideoSerializer,
+        responses={200: Youtube_VideoSerializer()},
+    )
     def get(self, request, pk):
         # 쿠키에서 이미 조회한 비디오의 목록을 가져옴
         youtube_video = self.get_object(pk)
@@ -72,6 +87,13 @@ class Youtube_VideoDetail(APIView):
         return response
         # return Response(serializer.data)
 
+    @extend_schema(
+        tags=["youtube_videos 게시글 API"],
+        summary="youtube_videos 상세 게시글을 수정.",
+        description="youtube_videos 상세 게시글을 수정한다.",
+        request=Youtube_VideoSerializer,
+        responses={200: Youtube_VideoSerializer()},
+    )
     def put(self, request, pk):
         youtube_video = self.get_object(pk)
         serializer = Youtube_VideoSerializer(youtube_video, data=request.data)
@@ -80,10 +102,22 @@ class Youtube_VideoDetail(APIView):
             return Response(serializer.data)
         return Response(serializer.errors)
 
+    @extend_schema(
+        tags=["youtube_videos 게시글 API"],
+        summary="youtube_videos 상세 게시글을 삭제",
+        description="youtube_videos 상세 게시글을 삭제한다",
+        responses={204: "No Content"},
+    )
     def delete(self, request, pk):
         youtube_video = self.get_object(pk)
         youtube_video.delete()
         return Response(status=HTTP_404_NOT_FOUND)
+
+    def get_object(self, pk):
+        try:
+            return Youtube_Video.objects.get(pk=pk)
+        except Youtube_Video.DoesNotExist:
+            return Response(status=HTTP_404_NOT_FOUND)
 
 
 # class CountResult(APIView):

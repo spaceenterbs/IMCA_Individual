@@ -17,13 +17,13 @@ from django.urls import reverse
 
 
 class CustomPagination(PageNumberPagination):
-    page_size = 10
+    page_size = 2
     page_size_query_param = "page_size"
     max_page_size = 100
 
 
 class Boards(APIView):
-    pagination_class = CustomPagination
+    pagination_class = CustomPagination()
 
     @extend_schema(
         tags=["게시판 게시글 API"],
@@ -34,24 +34,32 @@ class Boards(APIView):
     def get(self, request):
         boards = Board.objects.all()
         page = self.pagination_class.paginate_queryset(boards, request)
+
         if page is not None:
             serializer = BoardSerializer(page, many=True)
             return self.pagination_class.get_paginated_response(serializer.data)
+
         serializer = BoardSerializer(boards, many=True)
         res = serializer.data
-        next_url = "http://port-0-imca-3prof2llkuol0db.sel4.cloudtype.app/api/v1/community_board/?page=2"
-        previous_url = "http://port-0-imca-3prof2llkuol0db.sel4.cloudtype.app/api/v1/community_board/"
+
+        current_url = request.build_absolute_uri()
+
+        next_page = page.number + 1 if page.has_next() else None
+        prev_page = page.number - 1 if page.has_previous() else None
+        next_url = None
+        prev_url = None
+        if next_page:
+            next_url = f"{current_url}?page={next_page}"
+        if prev_page:
+            prev_url = f"{current_url}?page={prev_page}"
 
         data = {
             "count": boards.count(),
-            "next": next_url if next_url else None,
-            "previous": previous_url if previous_url else None,
+            "next": next_url,
+            "previous": prev_url,
             "results": res,
         }
         return Response(data)
-
-        # return Response(data, status=status.HTTP_200_OK)
-        # return Response(serializer.data)
 
     @extend_schema(
         tags=["게시판 게시글 API"],
