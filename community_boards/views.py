@@ -23,7 +23,7 @@ class CustomPagination(PageNumberPagination):
 
 
 class Boards(APIView):
-    pagination_class = CustomPagination()
+    pagination_class = CustomPagination
 
     @extend_schema(
         tags=["게시판 게시글 API"],
