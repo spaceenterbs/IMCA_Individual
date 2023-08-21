@@ -32,6 +32,8 @@ class Board(CommonModel):
         verbose_name="좋아요 목록",
         blank=True,
     )
+    is_blocked = models.BooleanField(default=False)
+
     # reviews_num = models.ForeignKey(  # 게시글에 달린 댓글들
     #     # 이 필드는 ForeignKey로 선언되었습니다. 이것은 각 게시글에 달린 댓글을 나타냅니다.
     #     # Review 모델과 연결되는데, related_name을 사용하여 리뷰 입장에서 해당 게시글을 가져올 때 사용할 이름을 지정합니다. 이 필드도 blank=True, null=True로 설정하여 해당 필드가 비어있을 수 있도록 합니다.

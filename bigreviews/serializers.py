@@ -17,7 +17,7 @@ class BigreviewSerializer(ModelSerializer):
         #     "content",
         #     "created_at",
         #     "updated_at",
-        #     "is_blocked",
+        #     "is_blockeded",
         # )
 
     # def get_total_comments(self, obj):

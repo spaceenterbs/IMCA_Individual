@@ -10,6 +10,7 @@ class Youtube_Video(CommonModel):
     video_url = models.URLField()
     thumbnail_url = models.URLField()
     views_count = models.PositiveIntegerField(default=0)
+    is_blocked = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title

@@ -14,6 +14,7 @@ class Review(CommonModel):
         related_name="reviews",  # 게시글의 입장에서 해당 게시글에 달린 리뷰들을 가져올 때 사용할 이름
     )
     content = models.CharField(max_length=140)
+    is_blocked = models.BooleanField(default=False)
 
     def __str__(self):
         return self.content

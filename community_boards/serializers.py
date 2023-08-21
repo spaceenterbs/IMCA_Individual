@@ -1,20 +1,12 @@
 from rest_framework import serializers
 from .models import Board, CommonModel
-from rest_framework.serializers import ModelSerializer
 from users.serializers import SemiUserSerializer
 
 
-class CommonModelSerializer(serializers.ModelSerializer):
-    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")  # 년-월-일 시:분 형식으로 변환
-    updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")  # 년-월-일 시:분 형식으로 변환
-
-    class Meta:
-        model = CommonModel
-        fields = "__all__"
-
-
-class BoardSerializer(ModelSerializer):
+class BoardSerializer(serializers.ModelSerializer):
     author = SemiUserSerializer(read_only=True)
+    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")  # 년-월-일 시:분 형식으로 변환
+    updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
     likes_count = serializers.SerializerMethodField()  # 추가된 필드
     reviews_count = serializers.SerializerMethodField()
     # bigreviews_count = serializers.SerializerMethodField()
