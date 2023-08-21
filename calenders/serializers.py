@@ -21,4 +21,4 @@ class SemiInfoSerializer(serializers.ModelSerializer):
 class DetailInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Calendar
-        exclude = ("id",)
+        exclude = ("id", "owner")

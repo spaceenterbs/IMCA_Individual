@@ -37,8 +37,8 @@ class Calendarinfo(APIView):
                     "end_date": "종료일",
                     "poster": "포스타",
                     "place": "장소",
-                    "state": "공연 상태",
-                    "genre": "장르",
+                    "runtime": "상영시간",
+                    "price": "가격",
                     "name": "제목",
                 },
             ),
@@ -46,6 +46,7 @@ class Calendarinfo(APIView):
     )
     def post(self, request):
         serializer = serializers.DetailInfoSerializer(data=request.data)
+        print(dir(request))
         if serializer.is_valid():
             data = serializer.save(owner=request.user)
             serializer = serializers.DetailInfoSerializer(data)

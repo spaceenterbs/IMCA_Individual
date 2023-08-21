@@ -6,8 +6,8 @@ class Calendar(models.Model):
     end_date = models.DateTimeField(null=False, blank=False)
     poster = models.URLField(null=True, blank=True)
     place = models.CharField(max_length=15)
-    state = models.CharField(max_length=7)
-    genre = models.CharField(max_length=7)
+    runtime = models.TimeField(null=True, blank=True)
+    price = models.PositiveIntegerField(null=True, blank=True)
     name = models.CharField(max_length=20)
     owner = models.ForeignKey(
         "users.User", on_delete=models.CASCADE, related_name="calendars"
