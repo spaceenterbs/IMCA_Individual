@@ -29,6 +29,13 @@ class BoardSerializer(ModelSerializer):
         return obj.get_reviews_count()  # Board 모델의 get_reviews_count 함수 호출
 
 
+class PaginationSerializer(serializers.Serializer):
+    count = serializers.IntegerField()
+    next = serializers.CharField(allow_null=True)
+    previous = serializers.CharField(allow_null=True)
+    results = serializers.ListField(child=serializers.DictField())
+
+
 """
 위의 코드에서 'likes_count'와 'reviews_count' 필드는 serializer의 'SerializerMethodField'를 사용하여 추가되었다.
 각 필드의 값을 계산하기 위해 'get_likes_count'와 'get_reviews_count' 함수를 호출하고, 이러한 값을 API 응답에서 사용할 수 있게 된다.

@@ -3,7 +3,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Board
-from .serializers import BoardSerializer
+from .serializers import BoardSerializer, PaginationSerializer
 from rest_framework.status import (
     HTTP_201_CREATED,
     HTTP_204_NO_CONTENT,
@@ -27,46 +27,56 @@ class Boards(APIView):
 
     @extend_schema(
         tags=["게시판 게시글 API"],
-        summary="게시글 리스트를 가져옴",
-        description="게시판의 모든 게시글을 가져온다.",
+        summary="게시글 리스트를 가져옴, 페이지네이션 처리됨.",
+        description="게시판의 모든 게시글을 가져오고, 페이지네이션이 처리된다",
         responses={200: BoardSerializer(many=True)},
     )
     def get(self, request):
         boards = Board.objects.all()
-        paginator = self.pagination_class()
-        page = paginator.paginate_queryset(boards, request)
-
+        page = self.pagination_class.paginate_queryset(boards, request)
         serializer = BoardSerializer(page, many=True)
-        return paginator.get_paginated_response(serializer.data)
-        # page = self.pagination_class.paginate_queryset(
-        #     boards, request, view=self
-        # )  # request와 view 인스턴스 전달
 
-        # if page is not None:
-        #     serializer = BoardSerializer(page, many=True)
-        #     return self.pagination_class.get_paginated_response(serializer.data)
+        # Create a PaginationSerializer instance with the required data
+        pagination_data = {
+            "count": self.pagination_class.page.paginator.count,
+            "next": self.pagination_class.get_next_link(),
+            "previous": self.pagination_class.get_previous_link(),
+            "results": serializer.data,
+        }
 
-        # serializer = BoardSerializer(boards, many=True)
-        # res = serializer.data
+        # Serialize the pagination data and return it in the response
+        pagination_serializer = PaginationSerializer(pagination_data)
+        return Response(pagination_serializer.data)
 
-        # current_url = request.build_absolute_uri()
+    # page = self.pagination_class.paginate_queryset(
+    #     boards, request, view=self
+    # )  # request와 view 인스턴스 전달
 
-        # next_page = page.number + 1 if page.has_next() else None
-        # prev_page = page.number - 1 if page.has_previous() else None
-        # next_url = None
-        # prev_url = None
-        # if next_page:
-        #     next_url = f"{current_url}?page={next_page}"
-        # if prev_page:
-        #     prev_url = f"{current_url}?page={prev_page}"
+    # if page is not None:
+    #     serializer = BoardSerializer(page, many=True)
+    #     return self.pagination_class.get_paginated_response(serializer.data)
 
-        # data = {
-        #     "count": boards.count(),
-        #     "next": next_url,
-        #     "previous": prev_url,
-        #     "results": res,
-        # }
-        # return Response(data)
+    # serializer = BoardSerializer(boards, many=True)
+    # res = serializer.data
+
+    # current_url = request.build_absolute_uri()
+
+    # next_page = page.number + 1 if page.has_next() else None
+    # prev_page = page.number - 1 if page.has_previous() else None
+    # next_url = None
+    # prev_url = None
+    # if next_page:
+    #     next_url = f"{current_url}?page={next_page}"
+    # if prev_page:
+    #     prev_url = f"{current_url}?page={prev_page}"
+
+    # data = {
+    #     "count": boards.count(),
+    #     "next": next_url,
+    #     "previous": prev_url,
+    #     "results": res,
+    # }
+    # return Response(data)
 
     @extend_schema(
         tags=["게시판 게시글 API"],
