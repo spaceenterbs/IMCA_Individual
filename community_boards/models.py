@@ -32,16 +32,16 @@ class Board(CommonModel):
         verbose_name="좋아요 목록",
         blank=True,
     )
-    reviews_num = models.ForeignKey(  # 게시글에 달린 댓글들
-        # 이 필드는 ForeignKey로 선언되었습니다. 이것은 각 게시글에 달린 댓글을 나타냅니다.
-        # Review 모델과 연결되는데, related_name을 사용하여 리뷰 입장에서 해당 게시글을 가져올 때 사용할 이름을 지정합니다. 이 필드도 blank=True, null=True로 설정하여 해당 필드가 비어있을 수 있도록 합니다.
-        "reviews.Review",
-        on_delete=models.CASCADE,
-        verbose_name="댓글 목록",
-        related_name="boards_reviewed",  # 댓글 입장에서 해당 댓글이 작성된 게시글들을 가져올 때 사용할 이름
-        blank=True,
-        null=True,
-    )
+    # reviews_num = models.ForeignKey(  # 게시글에 달린 댓글들
+    #     # 이 필드는 ForeignKey로 선언되었습니다. 이것은 각 게시글에 달린 댓글을 나타냅니다.
+    #     # Review 모델과 연결되는데, related_name을 사용하여 리뷰 입장에서 해당 게시글을 가져올 때 사용할 이름을 지정합니다. 이 필드도 blank=True, null=True로 설정하여 해당 필드가 비어있을 수 있도록 합니다.
+    #     "reviews.Review",
+    #     on_delete=models.CASCADE,
+    #     verbose_name="댓글 목록",
+    #     related_name="boards_reviewed",  # 댓글 입장에서 해당 댓글이 작성된 게시글들을 가져올 때 사용할 이름
+    #     blank=True,
+    #     null=True,
+    # )
 
     def __str__(self):
         return self.title
@@ -53,12 +53,12 @@ class Board(CommonModel):
         )  # count() 메서드를 사용하여 해당 게시글의 좋아요 수를 계산하고 반환한다.
         return likes_count
 
-    def get_reviews_count(self):  # 현재 게시글과 연관된 리뷰 및 큰 리뷰의 개수를 계산하고 반환한다.
-        # Review 모델과 Bigreview 모델을 필터링하여 현재 게시글과 연관된 리뷰 및 큰 리뷰의 개수를 계산하고 반환한다.
-        ## 예를 들어 게시글 인스턴스 'my_board'에서 'my_board.get_reviews_count()'를 호출하면, 해당 게시글에 달린 리뷰와 큰 리뷰의 총 개수를 반환한다.
-        reviews_count = Review.objects.filter(board=self).count()
-        bigreviews_count = Bigreview.objects.filter(parent_review__board=self).count()
-        return reviews_count + bigreviews_count
+    # def get_reviews_count(self):  # 현재 게시글과 연관된 리뷰 및 큰 리뷰의 개수를 계산하고 반환한다.
+    #     # Review 모델과 Bigreview 모델을 필터링하여 현재 게시글과 연관된 리뷰 및 큰 리뷰의 개수를 계산하고 반환한다.
+    #     ## 예를 들어 게시글 인스턴스 'my_board'에서 'my_board.get_reviews_count()'를 호출하면, 해당 게시글에 달린 리뷰와 큰 리뷰의 총 개수를 반환한다.
+    #     reviews_count = Review.objects.filter(board=self).count()
+    #     bigreviews_count = Bigreview.objects.filter(parent_review__board=self).count()
+    #     return reviews_count + bigreviews_count
 
     """ 위의 두 함수를 'Board' 모델 클래스에 추가하면 게시글의 좋아요 수와 리뷰 수를 계산할 수 있다.
     이 함수들은 모델 인스턴스 메서드로서, 해당 게시글 인스턴스에서 호출하여 사용할 수 있다."""

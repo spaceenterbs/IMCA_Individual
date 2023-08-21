@@ -1,8 +1,12 @@
 from rest_framework.serializers import ModelSerializer
+from rest_framework import serializers
+
 from .models import Bigreview
 
 
 class BigreviewSerializer(ModelSerializer):
+    # total_comments = serializers.SerializerMethodField()
+
     class Meta:
         model = Bigreview
         fields = "__all__"
@@ -15,6 +19,9 @@ class BigreviewSerializer(ModelSerializer):
         #     "updated_at",
         #     "is_blocked",
         # )
+
+    # def get_total_comments(self, obj):
+    #     return obj.bigreviews.count()
 
 
 # class BigreviewSerializer(serializers.ModelSerializer):

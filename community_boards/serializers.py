@@ -16,7 +16,8 @@ class CommonModelSerializer(serializers.ModelSerializer):
 class BoardSerializer(ModelSerializer):
     author = SemiUserSerializer(read_only=True)
     likes_count = serializers.SerializerMethodField()  # 추가된 필드
-    reviews_count = serializers.SerializerMethodField()  # 추가된 필드
+    reviews_count = serializers.SerializerMethodField()
+    # bigreviews_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Board
@@ -26,7 +27,21 @@ class BoardSerializer(ModelSerializer):
         return obj.get_likes_count()  # Board 모델의 get_likes_count 함수 호출
 
     def get_reviews_count(self, obj):
-        return obj.get_reviews_count()  # Board 모델의 get_reviews_count 함수 호출
+        reviews = obj.reviews.all()
+        total_comments_count = sum(review.bigreviews.count() + 1 for review in reviews)
+        return total_comments_count
+
+        # obj.reviews.all()로 해당 게시글의 모든 리뷰를 가져온 후, 각 리뷰의 bigreviews.count()를 더한 후 1을 더하여 총 댓글 수를 계산
+
+    # def get_reviews_count(self, obj):
+    #     # 해당 Board에 연결된 리뷰와 대댓글의 총 개수 계산
+    #     reviews_count = obj.reviews.count()  # 리뷰 수 계산
+    #     bigreviews_count = obj.bigreviews.count()  # 대댓글 수 계산
+    #     total_comments_count = reviews_count + bigreviews_count  # 총 댓글 수 계산
+    #     return total_comments_count
+
+    # def get_reviews_count(self, obj):
+    #     return obj.get_reviews_count()  # Board 모델의 get_reviews_count 함수 호출
 
 
 class PaginationSerializer(serializers.Serializer):

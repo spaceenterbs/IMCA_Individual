@@ -23,7 +23,7 @@ class CustomPagination(PageNumberPagination):
 
 
 class Boards(APIView):
-    pagination_class = CustomPagination
+    # pagination_class = CustomPagination
 
     @extend_schema(
         tags=["게시판 게시글 API"],
@@ -33,20 +33,20 @@ class Boards(APIView):
     )
     def get(self, request):
         boards = Board.objects.all()
-        page = self.pagination_class.paginate_queryset(boards, request)
+        paginator = CustomPagination()
+        page = paginator.paginate_queryset(boards, request)
         serializer = BoardSerializer(page, many=True)
 
         # Create a PaginationSerializer instance with the required data
         pagination_data = {
-            "count": self.pagination_class.page.paginator.count,
-            "next": self.pagination_class.get_next_link(),
-            "previous": self.pagination_class.get_previous_link(),
+            "count": paginator.page.paginator.count,
+            "next": paginator.get_next_link(),
+            "previous": paginator.get_previous_link(),
             "results": serializer.data,
         }
 
-        # Serialize the pagination data and return it in the response
-        pagination_serializer = PaginationSerializer(pagination_data)
-        return Response(pagination_serializer.data)
+        # 직접 생성한 pagination_data를 Response에 전달
+        return Response(pagination_data)
 
     # page = self.pagination_class.paginate_queryset(
     #     boards, request, view=self
@@ -109,6 +109,15 @@ class BoardDetail(APIView):
         board.views += 1  # 조회수 증가
         board.save()
         serializer = BoardSerializer(board)
+
+        # # 리뷰와 대댓글의 총 댓글 수 계산
+        # reviews_count = board.reviews.count()  # 리뷰 수 계산
+        # bigreviews_count = board.bigreviews.count()  # 대댓글 수 계산
+        # total_comments_count = reviews_count + bigreviews_count
+
+        # # BoardSerializer의 응답 데이터에 총 댓글 수를 추가
+        # serializer.data["reviews_count"] = total_comments_count
+
         return Response(serializer.data)
 
     @extend_schema(
