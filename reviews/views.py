@@ -15,8 +15,8 @@ from rest_framework.status import (
 class Reviews(APIView):
     @extend_schema(
         tags=["댓글"],
-        summary="댓글 및 대댓글 목록을 가져옴",
-        description="모든 댓글 및 대댓글의 목록을 가져온다.",
+        summary="모든 댓글의 목록을 가져옴",
+        description="모든 댓글의 목록을 가져온다.",
         responses={200: ReviewSerializer(many=True)},
     )
     def get(self, request):
@@ -47,8 +47,8 @@ class Reviews(APIView):
 
     @extend_schema(
         tags=["댓글"],
-        summary="댓글 및 대댓글 수정",
-        description="댓글 및 대댓글을 수정한다.",
+        summary="댓글을 수정",
+        description="댓글을 수정한다.",
         request=ReviewSerializer,
         responses={200: ReviewSerializer()},
     )
@@ -62,8 +62,8 @@ class Reviews(APIView):
 
     @extend_schema(
         tags=["댓글"],
-        summary="댓글 및 대댓글 삭제",
-        description="댓글 및 대댓글을 삭제한다.",
+        summary="댓글을 삭제",
+        description="댓글을 삭제한다.",
         responses={204: "No Content"},
     )
     def delete(self, request, pk):
