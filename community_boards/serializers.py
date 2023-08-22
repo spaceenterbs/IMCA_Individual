@@ -36,11 +36,11 @@ class BoardSerializer(serializers.ModelSerializer):
     #     return obj.get_reviews_count()  # Board 모델의 get_reviews_count 함수 호출
 
 
-class PaginationSerializer(serializers.Serializer):
-    count = serializers.IntegerField()
-    next = serializers.CharField(allow_null=True)
-    previous = serializers.CharField(allow_null=True)
-    results = serializers.ListField(child=serializers.DictField())
+# class PaginationSerializer(serializers.Serializer):
+#     count = serializers.IntegerField()
+#     next = serializers.CharField(allow_null=True)
+#     previous = serializers.CharField(allow_null=True)
+#     results = serializers.ListField(child=serializers.DictField())
 
 
 """

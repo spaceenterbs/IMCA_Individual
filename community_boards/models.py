@@ -1,10 +1,9 @@
-# from django.forms import CheckboxSelectMultiple
 from django.db import models
 from common.models import CommonModel
 
-from users.models import User
-from reviews.models import Review
-from bigreviews.models import Bigreview
+# from users.models import User
+# from reviews.models import Review
+# from bigreviews.models import Bigreview
 
 
 class Board(CommonModel):
@@ -24,7 +23,7 @@ class Board(CommonModel):
     content = models.TextField(null=False, blank=False)
     category = models.CharField(max_length=12, choices=CategoryType.choices)
     views = models.PositiveIntegerField(default=0)
-    likes_num = models.ManyToManyField(  # 게시글에 좋아요를 누른 사용자들
+    likes_user = models.ManyToManyField(  # 게시글에 좋아요를 누른 사용자들
         # 이 필드는 ManyToManyField로 선언되었습니다. 이것은 좋아요를 누른 사용자들과 게시글 간의 다대다 관계를 나타냅니다.
         # 위의 코드에서는 blank=True로 설정하여 해당 필드가 비어있을 수 있다는 것을 허용하고, 사용자가 좋아요를 누르지 않은 경우에도 게시글을 생성할 수 있도록 합니다.
         "users.User",
@@ -48,10 +47,10 @@ class Board(CommonModel):
     def __str__(self):
         return self.title
 
-    def get_likes_count(self):  # likes_num 필드를 통해 해당 게시글이 받은 좋아요 수를 반환한다.
-        # self.likes_num_count()를 호출하여 해당 게시글의 좋아요 수를 계산하고 반환한다.
+    def get_likes_count(self):  # likes_user 필드를 통해 해당 게시글이 받은 좋아요 수를 반환한다.
+        # self.likes_user_count()를 호출하여 해당 게시글의 좋아요 수를 계산하고 반환한다.
         likes_count = (
-            self.likes_num.count()
+            self.likes_user.count()
         )  # count() 메서드를 사용하여 해당 게시글의 좋아요 수를 계산하고 반환한다.
         return likes_count
 
@@ -67,18 +66,18 @@ class Board(CommonModel):
 
     # def like(self, user):
     #     """
-    #     Add an user to the likes_num field.
+    #     Add an user to the likes_user field.
     #     """
-    #     if not self.likes_num.filter(pk=user.pk).exists():
-    #         self.likes_num.add(user)
+    #     if not self.likes_user.filter(pk=user.pk).exists():
+    #         self.likes_user.add(user)
     #         self.save()
 
     # def unlike(self, user):
     #     """
-    #     Remove an user from the likes_num field.
+    #     Remove an user from the likes_user field.
     #     """
-    #     if self.likes_num.filter(pk=user.pk).exists():
-    #         self.likes_num.remove(user)
+    #     if self.likes_user.filter(pk=user.pk).exists():
+    #         self.likes_user.remove(user)
     #         self.save()
 
 

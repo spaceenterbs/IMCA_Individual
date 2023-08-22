@@ -71,18 +71,18 @@ class Youtube_VideoDetail(APIView):
         serializer = Youtube_VideoSerializer(youtube_video)
         response = Response(serializer.data)
 
-        # 쿠키 설정
-        expires = datetime.strftime(
-            datetime.utcnow() + timedelta(days=30), "%a, %d-%b-%Y %H:%M:%S GMT"
-        )
-        response.set_cookie(
-            "viewed_videos",
-            ",".join(viewed_videos),
-            expires=expires,
-            httponly=True,
-            secure=True,
-            samesite="Lax",
-        )
+        # # 쿠키 설정
+        # expires = datetime.strftime(
+        #     datetime.utcnow() + timedelta(days=30), "%a, %d-%b-%Y %H:%M:%S GMT"
+        # )
+        # response.set_cookie(
+        #     "viewed_videos",
+        #     ",".join(viewed_videos),
+        #     expires=expires,
+        #     httponly=True,
+        #     secure=True,
+        #     samesite="Lax",
+        # )
 
         return response
         # return Response(serializer.data)

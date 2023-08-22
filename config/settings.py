@@ -202,3 +202,7 @@ CSRF_TRUSTED_ORIGINS = (
     "https://port-0-imca-3prof2llkuol0db.sel4.cloudtype.app",
     "https://port-0-imca-3prof2llkuok2wj.sel4.cloudtype.app",  # 8월 19일 토요일 방민식 배포
 )
+
+SESSION_COOKIE_AGE = 43200
+# 5 # 5초
+# 43200 # 12시간
