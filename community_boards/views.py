@@ -64,21 +64,23 @@ class CategoryBoards(APIView):
 
     @extend_schema(
         tags=["게시판 게시글 API"],
-        summary="게시글을 만든다.",
-        description="새로운 게시글을 만든다.",
+        summary="새로운 게시글을 작성함.",
+        description="새로운 게시글을 작성한다.",
         request=BoardSerializer,
         responses={201: BoardSerializer()},
     )
-    def post(self, request):
-        try:
-            serializer = BoardSerializer(data=request.data)
-            if serializer.is_valid():
-                content = serializer.save(author=request.user)
-                return Response(BoardSerializer(content).data, status=HTTP_201_CREATED)
-            else:
-                return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({"error": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+    def post(self, request, category):
+        # Validate the category input (same as in the get method)
+        if category not in [choice[0] for choice in Board.CategoryType.choices]:
+            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
+
+        # Deserialize the request data using the serializer
+        serializer = BoardSerializer(data=request.data)
+        if serializer.is_valid():
+            # Save the new board instance
+            serializer.save(category=category)  # Assign the category to the board
+            return Response(serializer.data, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
 class Boards(APIView):
