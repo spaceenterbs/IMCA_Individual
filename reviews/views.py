@@ -2,14 +2,88 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Review
+from community_boards.models import Board
 from .serializers import ReviewSerializer
 from rest_framework.status import (
+    HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
+
+
+class CategoryReviewList(APIView):
+    def get(self, request, category):
+        # Validate the category input
+        if category not in [choice[0] for choice in Board.CategoryType.choices]:
+            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
+
+        # Get reviews for boards in the specified category
+        boards = Board.objects.filter(category=category)
+        board_ids = boards.values_list("id", flat=True)
+        reviews = Review.objects.filter(board__in=board_ids)
+
+        serializer = ReviewSerializer(reviews, many=True)
+        return Response(serializer.data, HTTP_200_OK)
+
+    def post(self, request, category):
+        # Validate the category input
+        if category not in [choice[0] for choice in Board.CategoryType.choices]:
+            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
+
+        # Create a new review for boards in the specified category
+        boards = Board.objects.filter(category=category)
+        board_ids = boards.values_list("id", flat=True)
+
+        data = request.data
+        data["board"] = board_ids[
+            0
+        ]  # You might need to adjust this based on your logic
+
+        serializer = ReviewSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+    def put(self, request, category):
+        # Validate the category input
+        if category not in [choice[0] for choice in Board.CategoryType.choices]:
+            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
+
+        # Update reviews for boards in the specified category
+        boards = Board.objects.filter(category=category)
+        board_ids = boards.values_list("id", flat=True)
+        reviews = Review.objects.filter(board__in=board_ids)
+
+        data = request.data
+        for review in reviews:
+            if review.id in data:
+                review_data = data[review.id]
+                serializer = ReviewSerializer(review, data=review_data, partial=True)
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+        return Response({"message": "Reviews updated successfully"}, status=HTTP_200_OK)
+
+    def delete(self, request, category):
+        # Validate the category input
+        if category not in [choice[0] for choice in Board.CategoryType.choices]:
+            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
+
+        # Delete reviews for boards in the specified category
+        boards = Board.objects.filter(category=category)
+        board_ids = boards.values_list("id", flat=True)
+        reviews = Review.objects.filter(board__in=board_ids)
+
+        for review in reviews:
+            review.delete()
+
+        return Response(status=HTTP_204_NO_CONTENT)
 
 
 class Reviews(APIView):

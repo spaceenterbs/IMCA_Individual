@@ -2,14 +2,94 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Bigreview
+from reviews.models import Review
+from community_boards.models import Board
 from .serializers import BigreviewSerializer
 from rest_framework.status import (
+    HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
+
+
+class CategoryBigreviewList(APIView):
+    def get(self, request, category):
+        # Validate the category input
+        if category not in [choice[0] for choice in Board.CategoryType.choices]:
+            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
+
+        # Get big reviews for parent reviews in the specified category
+        parent_reviews = Review.objects.filter(board__category=category)
+        parent_review_ids = parent_reviews.values_list("id", flat=True)
+        bigreviews = Bigreview.objects.filter(parent_review__in=parent_review_ids)
+
+        serializer = BigreviewSerializer(bigreviews, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, category):
+        # Validate the category input
+        if category not in [choice[0] for choice in Board.CategoryType.choices]:
+            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
+
+        # Create a new big review for parent reviews in the specified category
+        parent_reviews = Review.objects.filter(board__category=category)
+        parent_review_ids = parent_reviews.values_list("id", flat=True)
+
+        data = request.data
+        data["parent_review"] = parent_review_ids[
+            0
+        ]  # You might need to adjust this based on your logic
+
+        serializer = BigreviewSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+    def put(self, request, category):
+        # Validate the category input
+        if category not in [choice[0] for choice in Board.CategoryType.choices]:
+            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
+
+        # Update big reviews for parent reviews in the specified category
+        parent_reviews = Review.objects.filter(board__category=category)
+        parent_review_ids = parent_reviews.values_list("id", flat=True)
+        bigreviews = Bigreview.objects.filter(parent_review__in=parent_review_ids)
+
+        data = request.data
+        for bigreview in bigreviews:
+            if bigreview.id in data:
+                bigreview_data = data[bigreview.id]
+                serializer = BigreviewSerializer(
+                    bigreview, data=bigreview_data, partial=True
+                )
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+        return Response(
+            {"message": "Bigreviews updated successfully"},
+            HTTP_200_OK,
+        )
+
+    def delete(self, request, category):
+        # Validate the category input
+        if category not in [choice[0] for choice in Board.CategoryType.choices]:
+            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
+
+        # Delete big reviews for parent reviews in the specified category
+        parent_reviews = Review.objects.filter(board__category=category)
+        parent_review_ids = parent_reviews.values_list("id", flat=True)
+        bigreviews = Bigreview.objects.filter(parent_review__in=parent_review_ids)
+
+        for bigreview in bigreviews:
+            bigreview.delete()
+
+        return Response(status=HTTP_204_NO_CONTENT)
 
 
 class Bigreviews(APIView):

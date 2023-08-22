@@ -5,9 +5,11 @@ urlpatterns = [
     path(
         "",
         views.Reviews.as_view(),
+        name="reviews",
     ),
-    # path(
-    #     "<int:pk>/",
-    #     views.ReviewDetail.as_view(),
-    # ),
+    path(
+        "category_reviews/<str:category>/",
+        views.CategoryReviewList.as_view(),
+        name="category-review-list",
+    ),
 ]
