@@ -16,6 +16,12 @@ from rest_framework.status import (
 
 
 class CategoryBigreviewList(APIView):
+    @extend_schema(
+        tags=["댓글의 댓글"],
+        summary="카테고리별 대댓글 목록을 가져옴",
+        description="카테고리별 대댓글의 목록을 가져온다",
+        responses={200: BigreviewSerializer(many=True)},
+    )
     def get(self, request, category):
         # Validate the category input
         if category not in [choice[0] for choice in Board.CategoryType.choices]:
@@ -29,6 +35,13 @@ class CategoryBigreviewList(APIView):
         serializer = BigreviewSerializer(bigreviews, many=True)
         return Response(serializer.data)
 
+    @extend_schema(
+        tags=["댓글의 댓글"],
+        summary="카테고리별 대댓글 작성",
+        description="카테고리별 새 대댓글을 작성한다.",
+        request=BigreviewSerializer,
+        responses={201: BigreviewSerializer()},
+    )
     def post(self, request, category):
         # Validate the category input
         if category not in [choice[0] for choice in Board.CategoryType.choices]:
@@ -49,6 +62,13 @@ class CategoryBigreviewList(APIView):
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
+    @extend_schema(
+        tags=["댓글의 댓글"],
+        summary="카테고리별 대댓글 수정",
+        description="카테고리별 대댓글을 수정한다.",
+        request=BigreviewSerializer,
+        responses={200: BigreviewSerializer()},
+    )
     def put(self, request, category):
         # Validate the category input
         if category not in [choice[0] for choice in Board.CategoryType.choices]:
@@ -76,6 +96,12 @@ class CategoryBigreviewList(APIView):
             HTTP_200_OK,
         )
 
+    @extend_schema(
+        tags=["댓글의 댓글"],
+        summary="카테고리별 대댓글 삭제",
+        description="카테고리별 대댓글을 삭제한다.",
+        responses={204: "No Content"},
+    )
     def delete(self, request, category):
         # Validate the category input
         if category not in [choice[0] for choice in Board.CategoryType.choices]:

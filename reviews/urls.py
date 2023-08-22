@@ -8,7 +8,7 @@ urlpatterns = [
         name="reviews",
     ),
     path(
-        "category_reviews/<str:category>/",
+        "category/<str:category>/",
         views.CategoryReviewList.as_view(),
         name="category-review-list",
     ),

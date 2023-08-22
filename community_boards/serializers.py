@@ -5,6 +5,8 @@ from users.serializers import SemiUserSerializer
 
 class BoardSerializer(serializers.ModelSerializer):
     author = SemiUserSerializer(read_only=True)
+    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")  # 년-월-일 시:분 형식으로 변환
+    updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
     likes_count = serializers.SerializerMethodField()  # 추가된 필드
     reviews_count = serializers.SerializerMethodField()
     # bigreviews_count = serializers.SerializerMethodField()

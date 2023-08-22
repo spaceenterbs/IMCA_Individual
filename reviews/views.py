@@ -15,6 +15,12 @@ from rest_framework.status import (
 
 
 class CategoryReviewList(APIView):
+    @extend_schema(
+        tags=["댓글"],
+        summary="카테고리별 모든 댓글 목록을 가져옴",
+        description="카테고리별 모든 댓글의 목록을 가져온다",
+        responses={200: ReviewSerializer(many=True)},
+    )
     def get(self, request, category):
         # Validate the category input
         if category not in [choice[0] for choice in Board.CategoryType.choices]:
@@ -28,6 +34,13 @@ class CategoryReviewList(APIView):
         serializer = ReviewSerializer(reviews, many=True)
         return Response(serializer.data, HTTP_200_OK)
 
+    @extend_schema(
+        tags=["댓글"],
+        summary="카테고리별 댓글 작성",
+        description="카테고리별 댓글을 작성한다.",
+        request=ReviewSerializer,
+        responses={201: ReviewSerializer()},
+    )
     def post(self, request, category):
         # Validate the category input
         if category not in [choice[0] for choice in Board.CategoryType.choices]:
@@ -48,6 +61,13 @@ class CategoryReviewList(APIView):
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
+    @extend_schema(
+        tags=["댓글"],
+        summary="카테고리별 댓글을 수정",
+        description="카테고리별 댓글을 수정한다.",
+        request=ReviewSerializer,
+        responses={200: ReviewSerializer()},
+    )
     def put(self, request, category):
         # Validate the category input
         if category not in [choice[0] for choice in Board.CategoryType.choices]:
@@ -70,6 +90,12 @@ class CategoryReviewList(APIView):
 
         return Response({"message": "Reviews updated successfully"}, status=HTTP_200_OK)
 
+    @extend_schema(
+        tags=["댓글"],
+        summary="카테고리별 댓글 삭제",
+        description="카테고리별 댓글을 삭제한다.",
+        responses={204: "No Content"},
+    )
     def delete(self, request, category):
         # Validate the category input
         if category not in [choice[0] for choice in Board.CategoryType.choices]:
@@ -89,8 +115,8 @@ class CategoryReviewList(APIView):
 class Reviews(APIView):
     @extend_schema(
         tags=["댓글"],
-        summary="댓글 및 대댓글 목록을 가져옴",
-        description="모든 댓글 및 대댓글의 목록을 가져온다.",
+        summary="모든 댓글의 목록을 가져옴",
+        description="모든 댓글의 목록을 가져온다.",
         responses={200: ReviewSerializer(many=True)},
     )
     def get(self, request):
@@ -121,8 +147,8 @@ class Reviews(APIView):
 
     @extend_schema(
         tags=["댓글"],
-        summary="댓글 및 대댓글 수정",
-        description="댓글 및 대댓글을 수정한다.",
+        summary="댓글을 수정",
+        description="댓글을 수정한다.",
         request=ReviewSerializer,
         responses={200: ReviewSerializer()},
     )
@@ -136,8 +162,8 @@ class Reviews(APIView):
 
     @extend_schema(
         tags=["댓글"],
-        summary="댓글 및 대댓글 삭제",
-        description="댓글 및 대댓글을 삭제한다.",
+        summary="댓글을 삭제",
+        description="댓글을 삭제한다.",
         responses={204: "No Content"},
     )
     def delete(self, request, pk):
