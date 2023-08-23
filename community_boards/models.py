@@ -12,12 +12,12 @@ class Board(CommonModel):
         후기 = ("after", "후기")
         양도 = ("trade", "양도")
 
-    author = models.ForeignKey(
+    writer = models.ForeignKey(
         "users.User",
         on_delete=models.CASCADE,
         related_name="boards_user",  # 사용자 입장에서 해당 사용자가 작성한 게시글들을 가져올 때 사용할 이름
     )
-    photo = models.URLField(blank=True, null=True)  # 이미지
+    Image = models.URLField(blank=True, null=True)  # 이미지
     # file = models.FileField(upload_to="file", blank=True)
     title = models.CharField(max_length=30, null=False, blank=False)
     content = models.TextField(null=False, blank=False)

@@ -1,5 +1,5 @@
 from rest_framework.pagination import PageNumberPagination
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Board
@@ -29,22 +29,68 @@ class CustomPagination(PageNumberPagination):
 
 class CategoryBoards(APIView):
     @extend_schema(
-        tags=["게시판 게시글 API"],
-        summary="카테고리별 게시글 리스트를 가져오고, 페이지네이션을 처리함.",
-        description="각 카테고리별 게시판의 게시글을 가져오고, 페이지네이션을 처리한다.",
+        # operation_id="get_category_boards",
+        # parameters=[
+        #     OpenApiParameter(
+        #         name="page",
+        #         type=int,
+        #         location=OpenApiParameter.QUERY,
+        #         description="페이지 번호",
+        #         examples=[
+        #             OpenApiExample(
+        #                 response_only=True,
+        #                 summary="페이지 데이터 예시",
+        #                 name="페이지 데이터",
+        #                 value={
+        #                     "count": "카테고리별 게시물 수",
+        #                     "page_count": "카테고리별 페이지 수",
+        #                     "next": "다음 페이지 URL",
+        #                     "previous": "이전 페이지 URL",
+        #                 },
+        #             ),
+        #         ],
+        #     ),
+        # ],
+        summary="카테고리별 게시글 리스트를 가져오고, 페이지네이션을 처리함. ?page=<int:page>",
+        description="각 카테고리별 게시판의 게시글을 가져오고, 페이지네이션을 처리한다.?page=<int:page>없이 요청하면 기본적으로 1페이지를 가져온다.?page=<int:page>를 사용하여 페이지를 지정할 수 있다.",
         responses={200: BoardSerializer(many=True)},
-        parameters=[
-            {
-                "name": "page",
-                "in": "query",
-                "required": False,
-                "type": "integer",
-                "description": "페이지 번호, 기본은 1",
-            }
-        ],
+        # responses={
+        #     200: {
+        #         "examples": {
+        #             "Custom Example": {
+        #                 "count": 3,
+        #                 "page_count": 2,
+        #                 "next": "http://127.0.0.1:8000/api/v1/community_board/category/free/?page=2",
+        #                 "previous": None,
+        #                 "results": [
+        #                     {
+        #                         "id": 1,
+        #                         "created_at": "2023-08-23 16:44",
+        #                         "updated_at": "2023-08-23 16:44",
+        #                         "likes_count": 0,
+        #                         "reviews_count": 0,
+        #                         "Image": None,
+        #                         "title": "ㅁㅇㅎ",
+        #                         "content": "ㅁㅇㅁㅎㅁㅇㅎ",
+        #                         "category": "free",
+        #                         "views_count": 0,
+        #                         "is_blocked": False,
+        #                         "writer": 1,
+        #                         "likes_user": [],
+        #                     },
+        #                     # ... other items ...
+        #                 ],
+        #             }
+        #         }
+        #     }
+        # },
+        tags=["게시판 게시글 API"],
     )
     def get(self, request, category):
-        # Validate the category input
+        # Get the page number from query parameters
+        # page = int(request.query_params.get("page", 1))
+
+        # for category validation and pagination
         if category not in [
             choice[0] for choice in Board.CategoryType.choices
         ]:  # dict에서 key만 가져오기
