@@ -1,9 +1,10 @@
 from rest_framework.pagination import PageNumberPagination
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Board
 from .serializers import BoardSerializer
+from django.shortcuts import redirect
 from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -29,35 +30,45 @@ class CustomPagination(PageNumberPagination):
 
 class CategoryBoards(APIView):
     @extend_schema(
-        tags=["게시판 게시글 API"],
-        summary="카테고리별 게시글 리스트를 가져오고, 페이지네이션을 처리함.",
-        description="각 카테고리별 게시판의 게시글을 가져오고, 페이지네이션을 처리한다.",
+        # operation_id="get_category_boards",
+        # parameters=[
+        #     OpenApiParameter(
+        #         name="page",
+        #         type=int,
+        #         location=OpenApiParameter.QUERY,
+        #         description="페이지 번호",
+        #         examples=[
+        #             OpenApiExample(
+        #                 response_only=True,
+        #                 summary="페이지 데이터 예시",
+        #                 name="페이지 데이터",
+        #                 value={
+        #                     "count": "카테고리별 게시물 수",
+        #                     "page_count": "카테고리별 페이지 수",
+        #                     "next": "다음 페이지 URL",
+        #                     "previous": "이전 페이지 URL",
+        #                 },
+        #             ),
+        #         ],
+        #     ),
+        # ],
+        summary="카테고리별 게시글 리스트를 가져오고, 페이지네이션을 처리함. ?page=<int:page>",
+        description="각 카테고리별 게시판의 게시글을 가져오고, 페이지네이션을 처리한다.?page=<int:page>없이 요청하면 기본적으로 1페이지를 가져온다.?page=<int:page>를 사용하여 페이지를 지정할 수 있다.",
         responses={200: BoardSerializer(many=True)},
-        parameters=[
-            {
-                "name": "page",
-                "in": "query",
-                "required": False,
-                "type": "integer",
-                "description": "페이지 번호, 기본은 1",
-            }
-        ],
+        tags=["게시판 게시글 API"],
     )
     def get(self, request, category):
-        # Validate the category input
-        if category not in [
-            choice[0] for choice in Board.CategoryType.choices
-        ]:  # dict에서 key만 가져오기
+        # for category validation and pagination
+        if category not in [choice[0] for choice in Board.CategoryType.choices]:
             return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
 
         boards = Board.objects.filter(category=category)
-        total_boards_count = boards.count()  # 카테고리별 총 게시물 수 계산
+        total_boards_count = boards.count()
 
         paginator = CustomPagination()
         page = paginator.paginate_queryset(boards, request)
         serializer = BoardSerializer(page, many=True)
 
-        # Create a PaginationSerializer instance with the required data
         page_count = (
             total_boards_count + CustomPagination.page_size - 1
         ) // CustomPagination.page_size
@@ -69,7 +80,11 @@ class CategoryBoards(APIView):
             "results": serializer.data,
         }
 
-        # 직접 생성한 pagination_data를 Response에 전달
+        # # Check if the requested page is the default page (1)
+        # if not request.query_params.get("page"):
+        #     # Redirect to the URL with ?page=1
+        #     return redirect(request.path + "?page=1")
+
         return Response(pagination_data)
 
     @extend_schema(
@@ -184,6 +199,73 @@ class CategoryBoardDetail(APIView):
             return Response({"error": "Board not found"}, status=HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class CategoryBoardLike(APIView):
+    @extend_schema(
+        tags=["게시글 좋아요 API"],
+        summary="게시글 좋아요 개수 확인",
+        description="게시글에 좋아요를 누른 사용자 수를 확인한다.",
+        responses={200: BoardSerializer()},
+    )
+    def get(self, request, category, pk):
+        try:
+            # Validate the category input
+            if category not in [choice[0] for choice in Board.CategoryType.choices]:
+                return Response(
+                    {"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST
+                )
+
+            # Get the board object
+            board = get_object_or_404(Board, category=category, id=pk)
+
+            # Calculate the likes count for the board
+            likes_count = board.likes_user.count()
+
+            # Create a data dictionary containing board information and likes count
+            data = {
+                "board": BoardSerializer(board).data,
+                "likes_count": likes_count,
+            }
+
+            return Response(data, status=HTTP_200_OK)
+
+        except Board.DoesNotExist:
+            return Response({"error": "Board not found"}, status=HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @extend_schema(
+        tags=["게시글 좋아요 API"],
+        summary="게시글 좋아요",
+        description="게시글에 좋아요를 누른다.",
+        responses={200: BoardSerializer()},
+    )
+    def post(self, request, category, pk):
+        if category not in [choice[0] for choice in Board.CategoryType.choices]:
+            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
+
+        # Get the board object
+        board = get_object_or_404(Board, category=category, pk=pk)
+        # Get the user making the request
+        user = request.user
+
+        # Toggle the like status for the user
+        if user in board.likes_user.all():
+            board.likes_user.remove(user)
+        else:
+            board.likes_user.add(user)
+
+        # Calculate the updated likes count
+        likes_count = board.likes_user.count()
+
+        # Create the response data with updated likes count
+        response_data = {
+            "board": BoardSerializer(board).data,
+            "likes_count": likes_count,
+        }
+
+        return Response(response_data, status=HTTP_200_OK)
 
 
 class BoardLike(APIView):
