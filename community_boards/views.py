@@ -30,28 +30,6 @@ class CustomPagination(PageNumberPagination):
 
 class CategoryBoards(APIView):
     @extend_schema(
-        # operation_id="get_category_boards",
-        # parameters=[
-        #     OpenApiParameter(
-        #         name="page",
-        #         type=int,
-        #         location=OpenApiParameter.QUERY,
-        #         description="페이지 번호",
-        #         examples=[
-        #             OpenApiExample(
-        #                 response_only=True,
-        #                 summary="페이지 데이터 예시",
-        #                 name="페이지 데이터",
-        #                 value={
-        #                     "count": "카테고리별 게시물 수",
-        #                     "page_count": "카테고리별 페이지 수",
-        #                     "next": "다음 페이지 URL",
-        #                     "previous": "이전 페이지 URL",
-        #                 },
-        #             ),
-        #         ],
-        #     ),
-        # ],
         summary="카테고리별 게시글 리스트를 가져오고, 페이지네이션을 처리함. ?page=<int:page>",
         description="각 카테고리별 게시판의 게시글을 가져오고, 페이지네이션을 처리한다.?page=<int:page>없이 요청하면 기본적으로 1페이지를 가져온다.?page=<int:page>를 사용하여 페이지를 지정할 수 있다.",
         responses={200: BoardSerializer(many=True)},
@@ -75,6 +53,7 @@ class CategoryBoards(APIView):
         pagination_data = {
             "count": total_boards_count,
             "page_count": page_count,
+            "page_size": CustomPagination.page_size,
             "next": paginator.get_next_link(),
             "previous": paginator.get_previous_link(),
             "results": serializer.data,
