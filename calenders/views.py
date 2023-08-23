@@ -19,6 +19,7 @@ class Calendarinfo(APIView):
         responses=serializers.SemiInfoSerializer,
     )
     def get(self, request):
+        print(request)
         calendar = Calendar.objects.filter(owner=request.user)
         serializer = serializers.SemiInfoSerializer(calendar, many=True)
         return Response(serializer.data)
