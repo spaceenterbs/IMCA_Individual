@@ -29,7 +29,7 @@ class CategoryReviewList(APIView):
         # Get reviews for boards in the specified category
         boards = Board.objects.filter(category=category)
         board_ids = boards.values_list("id", flat=True)
-        reviews = Review.objects.filter(board__in=board_ids)
+        reviews = Review.objects.filter(review_board__in=board_ids)
 
         serializer = ReviewSerializer(reviews, many=True)
         return Response(serializer.data, HTTP_200_OK)

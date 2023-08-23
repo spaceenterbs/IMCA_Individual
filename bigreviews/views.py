@@ -28,9 +28,9 @@ class CategoryBigreviewList(APIView):
             return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
 
         # Get big reviews for parent reviews in the specified category
-        parent_reviews = Review.objects.filter(board__category=category)
+        parent_reviews = Review.objects.filter(review_board__category=category)
         parent_review_ids = parent_reviews.values_list("id", flat=True)
-        bigreviews = Bigreview.objects.filter(parent_review__in=parent_review_ids)
+        bigreviews = Bigreview.objects.filter(bigreview_review__in=parent_review_ids)
 
         serializer = BigreviewSerializer(bigreviews, many=True)
         return Response(serializer.data)
