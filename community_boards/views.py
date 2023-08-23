@@ -33,6 +33,15 @@ class CategoryBoards(APIView):
         summary="카테고리별 게시글 리스트를 가져오고, 페이지네이션을 처리함.",
         description="각 카테고리별 게시판의 게시글을 가져오고, 페이지네이션을 처리한다.",
         responses={200: BoardSerializer(many=True)},
+        parameters=[
+            {
+                "name": "page",
+                "in": "query",
+                "required": False,
+                "type": "integer",
+                "description": "페이지 번호, 기본은 1",
+            }
+        ],
     )
     def get(self, request, category):
         # Validate the category input
@@ -49,9 +58,12 @@ class CategoryBoards(APIView):
         serializer = BoardSerializer(page, many=True)
 
         # Create a PaginationSerializer instance with the required data
+        page_count = (
+            total_boards_count + CustomPagination.page_size - 1
+        ) // CustomPagination.page_size
         pagination_data = {
             "count": total_boards_count,
-            # "count": paginator.page.paginator.count,
+            "page_count": page_count,
             "next": paginator.get_next_link(),
             "previous": paginator.get_previous_link(),
             "results": serializer.data,
@@ -104,7 +116,7 @@ class CategoryBoardDetail(APIView):
             serializer = BoardSerializer(board)
             data = serializer.data
             if not visited_board_cookie:
-                board.views += 1  # 조회수 증가
+                board.views_count += 1  # 조회수 증가
                 board.save()
 
                 # 쿠키에 게시글 ID 저장 (1일 유효)
@@ -118,6 +130,8 @@ class CategoryBoardDetail(APIView):
                 return response
             else:
                 return Response(data)
+            # serializer = BoardSerializer(board)
+            # return Response(serializer.data, status=HTTP_200_OK)
         except Board.DoesNotExist:
             return Response({"error": "Board not found"}, status=HTTP_404_NOT_FOUND)
         except Exception as e:
@@ -170,6 +184,83 @@ class CategoryBoardDetail(APIView):
             return Response({"error": "Board not found"}, status=HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class BoardLike(APIView):
+    @extend_schema(
+        tags=["게시글 좋아요 API"],
+        summary="게시글 좋아요 개수 확인",
+        description="게시글에 좋아요를 누른 사용자 수를 확인한다.",
+        responses={200: BoardSerializer()},
+    )
+    def get(self, request, pk):
+        board = get_object_or_404(Board, pk=pk)
+
+        # 각 게시물당 좋아요 수 계산
+        likes_count = board.likes_user.count()
+
+        data = {
+            "board": BoardSerializer(board).data,
+            "likes_count": likes_count,
+        }
+
+        return Response(data)
+
+        # # 다음에 이동할 URL을 설정
+        # url_next = request.GET.get("next") or reverse(
+        #     "community_boards:board_detail", args=[pk]
+        # )
+        # # 해당 URL로 리다이렉트
+        # return redirect(url_next)
+
+        """
+        클라이언트가 게시글에 좋아요를 누를 때, 해당 게시글의 좋아요 상태를 토글하고, 사용자를 원래 페이지로 리다이렉트하는 기능을 구현한 것
+        """
+
+    @extend_schema(
+        tags=["게시글 좋아요 API"],
+        summary="게시글 좋아요",
+        description="게시글에 좋아요를 누른다.",
+        responses={200: BoardSerializer()},
+    )
+    def post(self, request, pk):
+        # 게시글 객체를 가져옴
+        board = get_object_or_404(Board, pk=pk)
+        # 현재 요청을 보낸 사용자
+        user = request.user
+
+        # 사용자가 이미 좋아요를 눌렀다면 좋아요를 취소하고,
+        # 그렇지 않으면 좋아요를 추가
+        if user in board.likes_user.all():
+            board.likes_user.remove(user)
+        else:
+            board.likes_user.add(user)
+
+        # 페이지 이동 없이 현재 페이지에서 좋아요 토글 후 응답을 반환
+        return Response(
+            {"likes_user": board.likes_user.count()},
+            HTTP_200_OK,
+        )
+
+
+class CategoryBoardsArrange(APIView):
+    @extend_schema(
+        tags=["게시판 게시글 API"],
+        summary="카테고리별 게시글을 최신순으로 5개 가져옴.",
+        description="카테고리별 게시판의 게시글을 최신순으로 5개 가져온다.",
+        responses={200: BoardSerializer(many=True)},
+    )
+    def get(self, request, category):
+        if category not in [choice[0] for choice in Board.CategoryType.choices]:
+            return Response({"error": "Invalid category"}, HTTP_400_BAD_REQUEST)
+
+        boards = Board.objects.filter(category=category).order_by("-created_at")[:2]
+
+        serializer = BoardSerializer(boards, many=True)
+        return Response(serializer.data, HTTP_200_OK)
+
+
+""""""
 
 
 class Boards(APIView):
@@ -282,77 +373,3 @@ class BoardDetail(APIView):
     #         serializer.save()
     #         return Response(serializer.data)
     #     return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
-
-
-class BoardLike(APIView):
-    @extend_schema(
-        tags=["게시글 좋아요 API"],
-        summary="게시글 좋아요 개수 확인",
-        description="게시글에 좋아요를 누른 사용자 수를 확인한다.",
-        responses={200: BoardSerializer()},
-    )
-    def get(self, request, pk):
-        board = get_object_or_404(Board, pk=pk)
-
-        # 각 게시물당 좋아요 수 계산
-        likes_count = board.likes_user.count()
-
-        data = {
-            "board": BoardSerializer(board).data,
-            "likes_count": likes_count,
-        }
-
-        return Response(data)
-
-        # # 다음에 이동할 URL을 설정
-        # url_next = request.GET.get("next") or reverse(
-        #     "community_boards:board_detail", args=[pk]
-        # )
-        # # 해당 URL로 리다이렉트
-        # return redirect(url_next)
-
-        """
-        클라이언트가 게시글에 좋아요를 누를 때, 해당 게시글의 좋아요 상태를 토글하고, 사용자를 원래 페이지로 리다이렉트하는 기능을 구현한 것
-        """
-
-    @extend_schema(
-        tags=["게시글 좋아요 API"],
-        summary="게시글 좋아요",
-        description="게시글에 좋아요를 누른다.",
-        responses={200: BoardSerializer()},
-    )
-    def post(self, request, pk):
-        # 게시글 객체를 가져옴
-        board = get_object_or_404(Board, pk=pk)
-        # 현재 요청을 보낸 사용자
-        user = request.user
-
-        # 사용자가 이미 좋아요를 눌렀다면 좋아요를 취소하고,
-        # 그렇지 않으면 좋아요를 추가
-        if user in board.likes_user.all():
-            board.likes_user.remove(user)
-        else:
-            board.likes_user.add(user)
-
-        # 페이지 이동 없이 현재 페이지에서 좋아요 토글 후 응답을 반환
-        return Response(
-            {"likes_user": board.likes_user.count()},
-            HTTP_200_OK,
-        )
-
-
-class CategoryBoardsArrange(APIView):
-    @extend_schema(
-        tags=["게시판 게시글 API"],
-        summary="카테고리별 게시글을 최신순으로 5개 가져옴.",
-        description="카테고리별 게시판의 게시글을 최신순으로 5개 가져온다.",
-        responses={200: BoardSerializer(many=True)},
-    )
-    def get(self, request, category):
-        if category not in [choice[0] for choice in Board.CategoryType.choices]:
-            return Response({"error": "Invalid category"}, HTTP_400_BAD_REQUEST)
-
-        boards = Board.objects.filter(category=category).order_by("-created_at")[:2]
-
-        serializer = BoardSerializer(boards, many=True)
-        return Response(serializer.data, HTTP_200_OK)

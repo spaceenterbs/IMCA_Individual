@@ -22,7 +22,7 @@ class Board(CommonModel):
     title = models.CharField(max_length=30, null=False, blank=False)
     content = models.TextField(null=False, blank=False)
     category = models.CharField(max_length=12, choices=CategoryType.choices)
-    views = models.PositiveIntegerField(default=0)
+    views_count = models.PositiveIntegerField(default=0)
     likes_user = models.ManyToManyField(  # 게시글에 좋아요를 누른 사용자들
         # 이 필드는 ManyToManyField로 선언되었습니다. 이것은 좋아요를 누른 사용자들과 게시글 간의 다대다 관계를 나타냅니다.
         # 위의 코드에서는 blank=True로 설정하여 해당 필드가 비어있을 수 있다는 것을 허용하고, 사용자가 좋아요를 누르지 않은 경우에도 게시글을 생성할 수 있도록 합니다.

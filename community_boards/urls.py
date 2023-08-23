@@ -14,6 +14,11 @@ urlpatterns = [
         name="board_category",
     ),
     path(
+        "category/<str:category>/?page=<int:page>/",
+        views.CategoryBoards.as_view(),
+        name="board_category_a",
+    ),
+    path(
         "category/<str:category>/<int:pk>/",
         views.CategoryBoardDetail.as_view(),
         name="board_category_detail",
