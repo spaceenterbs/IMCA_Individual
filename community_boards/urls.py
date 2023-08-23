@@ -7,7 +7,11 @@ app_name = "community_boards"  # 다른 애플리케이션과의 URL 패턴 충�
 urlpatterns = [
     # path("", views.Boards.as_view(), name="boards"),
     # path("<int:pk>/", views.BoardDetail.as_view(), name="board_detail"),
-    path("<int:pk>/like/", views.BoardLike.as_view(), name="board_like"),
+    path(
+        "category/<str:category>/<int:pk>/like/",
+        views.CategoryBoardLike.as_view(),
+        name="board_like",
+    ),
     path(
         "category/<str:category>/",
         views.CategoryBoards.as_view(),

@@ -11,7 +11,7 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExampl
 
 
 class Calendarinfo(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
         tags=["마이 캘린더 일정"],
@@ -56,7 +56,7 @@ class Calendarinfo(APIView):
 
 
 class CalendarDetail(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
         tags=["디테일 일정"],
