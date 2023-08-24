@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import Calendar
 from users.models import User
 from .models import Memo
@@ -11,6 +12,7 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExampl
 
 
 class Calendarinfo(APIView):
+    authentication_classes = [JWTAuthentication]
     # permission_classes = [IsAuthenticated]
 
     @extend_schema(
@@ -57,6 +59,7 @@ class Calendarinfo(APIView):
 
 
 class CalendarDetail(APIView):
+    authentication_classes = [JWTAuthentication]
     # permission_classes = [IsAuthenticated]
 
     @extend_schema(
@@ -93,6 +96,7 @@ class CalendarDetail(APIView):
 
 
 class Memoapi(APIView):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_cal(self, pk):
@@ -141,6 +145,7 @@ class Memoapi(APIView):
 
 
 class MemoDetail(APIView):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_cal(self, pk):
