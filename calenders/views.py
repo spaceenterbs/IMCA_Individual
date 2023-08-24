@@ -46,7 +46,6 @@ class Calendarinfo(APIView):
     )
     def post(self, request):
         serializer = serializers.DetailInfoSerializer(data=request.data)
-        print(dir(request))
         if serializer.is_valid():
             data = serializer.save(owner=request.user)
             serializer = serializers.DetailInfoSerializer(data)

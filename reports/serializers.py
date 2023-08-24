@@ -11,10 +11,7 @@ class ReportSerializer(serializers.ModelSerializer):
         model = Report
         fields = (
             "category",
-            "author",
             "reason",
-            "target_user",
-            "target_title",
             "target_pk",
         )
 
