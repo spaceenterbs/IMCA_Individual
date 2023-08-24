@@ -20,6 +20,11 @@ urlpatterns = [
     # path(
     #     "category/<str:category>/page/<int:page>/",
     #     views.CategoryBoards.as_view(),
+    #     name="board_category",
+    # ),
+    # path(
+    #     "category/<str:category>/page/<int:page>/",
+    #     views.CategoryBoards.as_view(),
     #     name="board_category_with_pagination",
     # ),
     path(
@@ -31,5 +36,10 @@ urlpatterns = [
         "category/<str:category>/count",
         views.CategoryBoardsArrange.as_view(),
         name="category_boards_sort",
+    ),
+    path(
+        "category_gather/<str:category>/<int:pk>/",
+        views.CategoryGatherDetail.as_view(),
+        name="category_gather_detail",
     ),
 ]

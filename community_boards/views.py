@@ -1,10 +1,15 @@
+from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Board
 from .serializers import BoardSerializer
+from reviews.serializers import ReviewSerializer
+from bigreviews.serializers import BigreviewSerializer
 from django.shortcuts import redirect
+from rest_framework import status
+from .models import Board
+from reviews.models import Review
+from bigreviews.models import Bigreview
 from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -16,10 +21,10 @@ from rest_framework.status import (
 from django.shortcuts import get_object_or_404
 
 
-class BoardPagination(PageNumberPagination):
-    page_size = 5
-    page_size_query_param = "page_size"
-    max_page_size = 100
+# class BoardPagination(PageNumberPagination):
+#     page_size = 5
+#     page_size_query_param = "page_size"
+#     max_page_size = 100
 
 
 class CustomPagination(PageNumberPagination):
@@ -247,61 +252,61 @@ class CategoryBoardLike(APIView):
         return Response(response_data, status=HTTP_200_OK)
 
 
-class BoardLike(APIView):
-    @extend_schema(
-        tags=["게시글 좋아요 API"],
-        summary="게시글 좋아요 개수 확인",
-        description="게시글에 좋아요를 누른 사용자 수를 확인한다.",
-        responses={200: BoardSerializer()},
-    )
-    def get(self, request, pk):
-        board = get_object_or_404(Board, pk=pk)
+# class BoardLike(APIView):
+#     @extend_schema(
+#         tags=["게시글 좋아요 API"],
+#         summary="게시글 좋아요 개수 확인",
+#         description="게시글에 좋아요를 누른 사용자 수를 확인한다.",
+#         responses={200: BoardSerializer()},
+#     )
+#     def get(self, request, pk):
+#         board = get_object_or_404(Board, pk=pk)
 
-        # 각 게시물당 좋아요 수 계산
-        likes_count = board.likes_user.count()
+#         # 각 게시물당 좋아요 수 계산
+#         likes_count = board.likes_user.count()
 
-        data = {
-            "board": BoardSerializer(board).data,
-            "likes_count": likes_count,
-        }
+#         data = {
+#             "board": BoardSerializer(board).data,
+#             "likes_count": likes_count,
+#         }
 
-        return Response(data)
+#         return Response(data)
 
-        # # 다음에 이동할 URL을 설정
-        # url_next = request.GET.get("next") or reverse(
-        #     "community_boards:board_detail", args=[pk]
-        # )
-        # # 해당 URL로 리다이렉트
-        # return redirect(url_next)
+#         # # 다음에 이동할 URL을 설정
+#         # url_next = request.GET.get("next") or reverse(
+#         #     "community_boards:board_detail", args=[pk]
+#         # )
+#         # # 해당 URL로 리다이렉트
+#         # return redirect(url_next)
 
-        """
-        클라이언트가 게시글에 좋아요를 누를 때, 해당 게시글의 좋아요 상태를 토글하고, 사용자를 원래 페이지로 리다이렉트하는 기능을 구현한 것
-        """
+#         """
+#         클라이언트가 게시글에 좋아요를 누를 때, 해당 게시글의 좋아요 상태를 토글하고, 사용자를 원래 페이지로 리다이렉트하는 기능을 구현한 것
+#         """
 
-    @extend_schema(
-        tags=["게시글 좋아요 API"],
-        summary="게시글 좋아요",
-        description="게시글에 좋아요를 누른다.",
-        responses={200: BoardSerializer()},
-    )
-    def post(self, request, pk):
-        # 게시글 객체를 가져옴
-        board = get_object_or_404(Board, pk=pk)
-        # 현재 요청을 보낸 사용자
-        user = request.user
+#     @extend_schema(
+#         tags=["게시글 좋아요 API"],
+#         summary="게시글 좋아요",
+#         description="게시글에 좋아요를 누른다.",
+#         responses={200: BoardSerializer()},
+#     )
+#     def post(self, request, pk):
+#         # 게시글 객체를 가져옴
+#         board = get_object_or_404(Board, pk=pk)
+#         # 현재 요청을 보낸 사용자
+#         user = request.user
 
-        # 사용자가 이미 좋아요를 눌렀다면 좋아요를 취소하고,
-        # 그렇지 않으면 좋아요를 추가
-        if user in board.likes_user.all():
-            board.likes_user.remove(user)
-        else:
-            board.likes_user.add(user)
+#         # 사용자가 이미 좋아요를 눌렀다면 좋아요를 취소하고,
+#         # 그렇지 않으면 좋아요를 추가
+#         if user in board.likes_user.all():
+#             board.likes_user.remove(user)
+#         else:
+#             board.likes_user.add(user)
 
-        # 페이지 이동 없이 현재 페이지에서 좋아요 토글 후 응답을 반환
-        return Response(
-            {"likes_user": board.likes_user.count()},
-            HTTP_200_OK,
-        )
+#         # 페이지 이동 없이 현재 페이지에서 좋아요 토글 후 응답을 반환
+#         return Response(
+#             {"likes_user": board.likes_user.count()},
+#             HTTP_200_OK,
+#         )
 
 
 class CategoryBoardsArrange(APIView):
@@ -321,116 +326,256 @@ class CategoryBoardsArrange(APIView):
         return Response(serializer.data, HTTP_200_OK)
 
 
+class CategoryGatherDetail(APIView):
+    def get(self, request, category, pk):
+        try:
+            # Validate the category input
+            if category not in [choice[0] for choice in Board.CategoryType.choices]:
+                return Response(
+                    {"error": "Invalid category"}, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Get board
+            board = Board.objects.get(category=category, id=pk)
+            board_serializer = BoardSerializer(board).data
+
+            # Get reviews for the board
+            reviews = Review.objects.filter(review_board=board)
+            review_serializer = ReviewSerializer(reviews, many=True).data
+
+            # Get bigreviews for the reviews
+            review_ids = reviews.values_list("id", flat=True)
+            bigreviews = Bigreview.objects.filter(bigreview_review__in=review_ids)
+            bigreview_serializer = BigreviewSerializer(bigreviews, many=True).data
+
+            data = {
+                "board": board_serializer,
+                "reviews": review_serializer,
+                # "bigreviews": bigreview_serializer,
+            }
+
+            return Response(data, status=status.HTTP_200_OK)
+
+        except Board.DoesNotExist:
+            return Response(
+                {"error": "Board not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def post(self, request, category, pk):
+        try:
+            # Validate the category input
+            if category not in [choice[0] for choice in Board.CategoryType.choices]:
+                return Response(
+                    {"error": "Invalid category"}, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Create a new review for the board
+            board = Board.objects.get(category=category, id=pk)
+            review_data = request.data.get("review", {})
+            review_data["review_board"] = board.id
+            review_serializer = ReviewSerializer(data=review_data)
+            if review_serializer.is_valid():
+                review_serializer.save()
+                return Response(review_serializer.data, status=status.HTTP_201_CREATED)
+            return Response(
+                review_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        except Board.DoesNotExist:
+            return Response(
+                {"error": "Board not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def put(self, request, category, pk):
+        try:
+            # Validate the category input
+            if category not in [choice[0] for choice in Board.CategoryType.choices]:
+                return Response(
+                    {"error": "Invalid category"}, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Update board
+            board = Board.objects.get(category=category, id=pk)
+            board_serializer = BoardSerializer(board, data=request.data)
+            if board_serializer.is_valid():
+                board_serializer.save()
+
+                # Update reviews for the board
+                reviews = Review.objects.filter(review_board=board)
+                for review in reviews:
+                    review_data = request.data.get(f"review_{review.id}", {})
+                    review_serializer = ReviewSerializer(
+                        review, data=review_data, partial=True
+                    )
+                    if review_serializer.is_valid():
+                        review_serializer.save()
+
+                        # Update bigreviews for the review
+                        bigreviews = Bigreview.objects.filter(bigreview_review=review)
+                        for bigreview in bigreviews:
+                            bigreview_data = request.data.get(
+                                f"bigreview_{bigreview.id}", {}
+                            )
+                            bigreview_serializer = BigreviewSerializer(
+                                bigreview, data=bigreview_data, partial=True
+                            )
+                            if bigreview_serializer.is_valid():
+                                bigreview_serializer.save()
+
+                return Response(board_serializer.data, status=status.HTTP_200_OK)
+            return Response(board_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except Board.DoesNotExist:
+            return Response(
+                {"error": "Board not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def delete(self, request, category, pk):
+        try:
+            # Validate the category input
+            if category not in [choice[0] for choice in Board.CategoryType.choices]:
+                return Response(
+                    {"error": "Invalid category"}, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Delete board and related reviews and bigreviews
+            board = Board.objects.get(category=category, id=pk)
+            board.delete()
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except Board.DoesNotExist:
+            return Response(
+                {"error": "Board not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
 """"""
 
 
-class Boards(APIView):
-    # pagination_class = CustomPagination
+# class Boards(APIView):
+#     # pagination_class = CustomPagination
 
-    @extend_schema(
-        tags=["게시판 게시글 API"],
-        summary="게시글 리스트를 가져옴, 페이지네이션 처리됨.",
-        description="게시판의 모든 게시글을 가져오고, 페이지네이션이 처리된다",
-        responses={200: BoardSerializer(many=True)},
-    )
-    def get(self, request):
-        boards = Board.objects.all()
-        paginator = BoardPagination()
-        page = paginator.paginate_queryset(boards, request)
-        serializer = BoardSerializer(page, many=True)
+#     @extend_schema(
+#         tags=["게시판 게시글 API"],
+#         summary="게시글 리스트를 가져옴, 페이지네이션 처리됨.",
+#         description="게시판의 모든 게시글을 가져오고, 페이지네이션이 처리된다",
+#         responses={200: BoardSerializer(many=True)},
+#     )
+#     def get(self, request):
+#         boards = Board.objects.all()
+#         paginator = BoardPagination()
+#         page = paginator.paginate_queryset(boards, request)
+#         serializer = BoardSerializer(page, many=True)
 
-        # Create a PaginationSerializer instance with the required data
-        pagination_data = {
-            "count": paginator.page.paginator.count,
-            "next": paginator.get_next_link(),
-            "previous": paginator.get_previous_link(),
-            "results": serializer.data,
-        }
+#         # Create a PaginationSerializer instance with the required data
+#         pagination_data = {
+#             "count": paginator.page.paginator.count,
+#             "next": paginator.get_next_link(),
+#             "previous": paginator.get_previous_link(),
+#             "results": serializer.data,
+#         }
 
-        # 직접 생성한 pagination_data를 Response에 전달
-        return Response(pagination_data)
+#         # 직접 생성한 pagination_data를 Response에 전달
+#         return Response(pagination_data)
 
-    @extend_schema(
-        tags=["게시판 게시글 API"],
-        summary="게시글을 만든다.",
-        description="새로운 게시글을 만든다.",
-        request=BoardSerializer,
-        responses={201: BoardSerializer()},
-    )
-    def post(self, request):
-        try:
-            serializer = BoardSerializer(data=request.data)
-            if serializer.is_valid():
-                content = serializer.save(author=request.user)
-                return Response(BoardSerializer(content).data, status=HTTP_201_CREATED)
+#     @extend_schema(
+#         tags=["게시판 게시글 API"],
+#         summary="게시글을 만든다.",
+#         description="새로운 게시글을 만든다.",
+#         request=BoardSerializer,
+#         responses={201: BoardSerializer()},
+#     )
+#     def post(self, request):
+#         try:
+#             serializer = BoardSerializer(data=request.data)
+#             if serializer.is_valid():
+#                 content = serializer.save(author=request.user)
+#                 return Response(BoardSerializer(content).data, status=HTTP_201_CREATED)
 
-            else:
-                return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({"error": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+#             else:
+#                 return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+#         except Exception as e:
+#             return Response({"error": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class BoardDetail(APIView):
-    @extend_schema(
-        tags=["게시판 게시글 API"],
-        summary="상세 게시글을 가져옴.",
-        description="게시글의 상세 내용을 가져온다.",
-        responses={200: BoardSerializer()},
-    )
-    def get(self, request, pk):
-        board = self.get_object(pk)
-        board.views += 1  # 조회수 증가
-        board.save()
-        serializer = BoardSerializer(board)
+# class BoardDetail(APIView):
+#     @extend_schema(
+#         tags=["게시판 게시글 API"],
+#         summary="상세 게시글을 가져옴.",
+#         description="게시글의 상세 내용을 가져온다.",
+#         responses={200: BoardSerializer()},
+#     )
+#     def get(self, request, pk):
+#         board = self.get_object(pk)
+#         board.views += 1  # 조회수 증가
+#         board.save()
+#         serializer = BoardSerializer(board)
 
-        # # 리뷰와 대댓글의 총 댓글 수 계산
-        # reviews_count = board.reviews.count()  # 리뷰 수 계산
-        # bigreviews_count = board.bigreviews.count()  # 대댓글 수 계산
-        # total_comments_count = reviews_count + bigreviews_count
+#         # # 리뷰와 대댓글의 총 댓글 수 계산
+#         # reviews_count = board.reviews.count()  # 리뷰 수 계산
+#         # bigreviews_count = board.bigreviews.count()  # 대댓글 수 계산
+#         # total_comments_count = reviews_count + bigreviews_count
 
-        # # BoardSerializer의 응답 데이터에 총 댓글 수를 추가
-        # serializer.data["reviews_count"] = total_comments_count
+#         # # BoardSerializer의 응답 데이터에 총 댓글 수를 추가
+#         # serializer.data["reviews_count"] = total_comments_count
 
-        return Response(serializer.data)
+#         return Response(serializer.data)
 
-    @extend_schema(
-        tags=["게시판 게시글 API"],
-        summary="게시글을 수정함.",
-        description="게시글을 수정한다.",
-        request=BoardSerializer,
-        responses={200: BoardSerializer()},
-    )
-    def put(self, request, pk):
-        board = self.get_object(pk)
-        serializer = BoardSerializer(board, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+#     @extend_schema(
+#         tags=["게시판 게시글 API"],
+#         summary="게시글을 수정함.",
+#         description="게시글을 수정한다.",
+#         request=BoardSerializer,
+#         responses={200: BoardSerializer()},
+#     )
+#     def put(self, request, pk):
+#         board = self.get_object(pk)
+#         serializer = BoardSerializer(board, data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data)
+#         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
-    @extend_schema(
-        tags=["게시판 게시글 API"],
-        summary="게시글 삭제",
-        description="게시글을 삭제한다.",
-        responses={204: "No Content"},
-    )
-    def delete(self, request, pk):
-        board = self.get_object(pk)
-        board.delete()
-        return Response(status=HTTP_204_NO_CONTENT)
+#     @extend_schema(
+#         tags=["게시판 게시글 API"],
+#         summary="게시글 삭제",
+#         description="게시글을 삭제한다.",
+#         responses={204: "No Content"},
+#     )
+#     def delete(self, request, pk):
+#         board = self.get_object(pk)
+#         board.delete()
+#         return Response(status=HTTP_204_NO_CONTENT)
 
-    def get_object(self, pk):
-        try:
-            return Board.objects.get(pk=pk)
-        except Board.DoesNotExist:
-            return Response({"error": "Board not found"}, status=HTTP_404_NOT_FOUND)
-        except Exception as e:
-            raise e
+#     def get_object(self, pk):
+#         try:
+#             return Board.objects.get(pk=pk)
+#         except Board.DoesNotExist:
+#             return Response({"error": "Board not found"}, status=HTTP_404_NOT_FOUND)
+#         except Exception as e:
+#             raise e
 
-    # def patch(self, request, pk):
-    #     board = self.get_object(pk)
-    #     serializer = BoardSerializer(board, data=request.data, partial=True)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data)
-    #     return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+#     # def patch(self, request, pk):
+#     #     board = self.get_object(pk)
+#     #     serializer = BoardSerializer(board, data=request.data, partial=True)
+#     #     if serializer.is_valid():
+#     #         serializer.save()
+#     #         return Response(serializer.data)
+#     #     return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
