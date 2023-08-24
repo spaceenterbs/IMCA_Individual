@@ -2,8 +2,10 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Review
+from community_boards.models import Board
 from .serializers import ReviewSerializer
 from rest_framework.status import (
+    HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
@@ -12,11 +14,109 @@ from rest_framework.status import (
 )
 
 
+class CategoryReviewList(APIView):
+    @extend_schema(
+        tags=["댓글"],
+        summary="카테고리별 모든 댓글 목록을 가져옴",
+        description="카테고리별 모든 댓글의 목록을 가져온다",
+        responses={200: ReviewSerializer(many=True)},
+    )
+    def get(self, request, category):
+        # Validate the category input
+        if category not in [choice[0] for choice in Board.CategoryType.choices]:
+            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
+
+        # Get reviews for boards in the specified category
+        boards = Board.objects.filter(category=category)
+        board_ids = boards.values_list("id", flat=True)
+        reviews = Review.objects.filter(review_board__in=board_ids)
+
+        serializer = ReviewSerializer(reviews, many=True)
+        return Response(serializer.data, HTTP_200_OK)
+
+    @extend_schema(
+        tags=["댓글"],
+        summary="카테고리별 댓글 작성",
+        description="카테고리별 댓글을 작성한다.",
+        request=ReviewSerializer,
+        responses={201: ReviewSerializer()},
+    )
+    def post(self, request, category):
+        # Validate the category input
+        if category not in [choice[0] for choice in Board.CategoryType.choices]:
+            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
+
+        # Create a new review for boards in the specified category
+        boards = Board.objects.filter(category=category)
+        board_ids = boards.values_list("id", flat=True)
+
+        data = request.data
+        data["board"] = board_ids[
+            0
+        ]  # You might need to adjust this based on your logic
+
+        serializer = ReviewSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        tags=["댓글"],
+        summary="카테고리별 댓글을 수정",
+        description="카테고리별 댓글을 수정한다.",
+        request=ReviewSerializer,
+        responses={200: ReviewSerializer()},
+    )
+    def put(self, request, category):
+        # Validate the category input
+        if category not in [choice[0] for choice in Board.CategoryType.choices]:
+            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
+
+        # Update reviews for boards in the specified category
+        boards = Board.objects.filter(category=category)
+        board_ids = boards.values_list("id", flat=True)
+        reviews = Review.objects.filter(board__in=board_ids)
+
+        data = request.data
+        for review in reviews:
+            if review.id in data:
+                review_data = data[review.id]
+                serializer = ReviewSerializer(review, data=review_data, partial=True)
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+        return Response({"message": "Reviews updated successfully"}, status=HTTP_200_OK)
+
+    @extend_schema(
+        tags=["댓글"],
+        summary="카테고리별 댓글 삭제",
+        description="카테고리별 댓글을 삭제한다.",
+        responses={204: "No Content"},
+    )
+    def delete(self, request, category):
+        # Validate the category input
+        if category not in [choice[0] for choice in Board.CategoryType.choices]:
+            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
+
+        # Delete reviews for boards in the specified category
+        boards = Board.objects.filter(category=category)
+        board_ids = boards.values_list("id", flat=True)
+        reviews = Review.objects.filter(board__in=board_ids)
+
+        for review in reviews:
+            review.delete()
+
+        return Response(status=HTTP_204_NO_CONTENT)
+
+
 class Reviews(APIView):
     @extend_schema(
         tags=["댓글"],
-        summary="댓글 및 대댓글 목록을 가져옴",
-        description="모든 댓글 및 대댓글의 목록을 가져온다.",
+        summary="모든 댓글의 목록을 가져옴",
+        description="모든 댓글의 목록을 가져온다.",
         responses={200: ReviewSerializer(many=True)},
     )
     def get(self, request):
@@ -47,8 +147,8 @@ class Reviews(APIView):
 
     @extend_schema(
         tags=["댓글"],
-        summary="댓글 및 대댓글 수정",
-        description="댓글 및 대댓글을 수정한다.",
+        summary="댓글을 수정",
+        description="댓글을 수정한다.",
         request=ReviewSerializer,
         responses={200: ReviewSerializer()},
     )
@@ -62,8 +162,8 @@ class Reviews(APIView):
 
     @extend_schema(
         tags=["댓글"],
-        summary="댓글 및 대댓글 삭제",
-        description="댓글 및 대댓글을 삭제한다.",
+        summary="댓글을 삭제",
+        description="댓글을 삭제한다.",
         responses={204: "No Content"},
     )
     def delete(self, request, pk):

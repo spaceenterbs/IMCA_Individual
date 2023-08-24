@@ -26,8 +26,8 @@ SECRET_KEY = get_env_variable("SECRET_KEY")
 API_KEY = get_env_variable("API_KEY")
 SERVER_API_KEY = get_env_variable("SERVER_API_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = get_env_variable("DEBUG")
-DEBUG = True
+DEBUG = get_env_variable("DEBUG")
+# DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -203,3 +203,7 @@ CSRF_TRUSTED_ORIGINS = (
     "https://port-0-imca-3prof2llkuol0db.sel4.cloudtype.app",
     "https://port-0-imca-3prof2llkuok2wj.sel4.cloudtype.app",  # 8월 19일 토요일 방민식 배포
 )
+
+SESSION_COOKIE_AGE = 43200
+# 5 # 5초
+# 43200 # 12시간

@@ -1,7 +1,15 @@
 from django.urls import path
-from .views import Bigreviews
+from . import views
 
 urlpatterns = [
-    path("", Bigreviews.as_view(), name="bigreviews"),
-    # path("<int:pk>/", BigreviewDetail.as_view(), name="bigreview_detail"),
+    # path(
+    #     "",
+    #     views.Bigreviews.as_view(),
+    #     name="bigreviews",
+    # ),
+    path(
+        "category/<str:category>/",
+        views.CategoryBigreviewList.as_view(),
+        name="category-bigreview-list",
+    ),
 ]
