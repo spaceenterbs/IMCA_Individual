@@ -19,17 +19,21 @@ class SaveReport(APIView):
             data=request.data,
         )
         report.is_valid(raise_exception=True)
+        print(request.data)
         if request.data["category"] == Report.ReportCategoryChoices.게시글:
             content_pk = request.data["target_pk"]
             content = Board.objects.get(pk=content_pk)
+            report.target_user = content.author
             report.target_content = content.content
             report.target_title = content.title
             data = {
+                "user": report.target_user,
                 "content": report.target_content,
                 "title": report.target_title,
             }
             report = report.save(
                 author=request.user,
+                target_user=data["user"],
                 target_content=data["content"],
                 target_title=data["title"],
             )
@@ -37,14 +41,17 @@ class SaveReport(APIView):
         if request.data["category"] == Report.ReportCategoryChoices.댓글:
             content_pk = request.data["target_pk"]
             content = Review.objects.get(pk=content_pk)
+            report.target_user = content.author
             report.target_content = content.content
             report.target_title = None
             data = {
+                "user": report.target_user,
                 "content": report.target_content,
                 "title": report.target_title,
             }
             report = report.save(
                 author=request.user,
+                target_user=data["user"],
                 target_content=data["content"],
                 target_title=data["title"],
             )
@@ -52,14 +59,17 @@ class SaveReport(APIView):
         if request.data["category"] == Report.ReportCategoryChoices.대댓글:
             content_pk = request.data["target_pk"]
             content = Bigreview.objects.get(pk=content_pk)
+            report.target_user = content.author
             report.target_content = content.content
             report.target_title = None
             data = {
+                "user": report.target_user,
                 "content": report.target_content,
                 "title": report.target_title,
             }
             report = report.save(
                 author=request.user,
+                target_user=data["user"],
                 target_content=data["content"],
                 target_title=data["title"],
             )

@@ -2,8 +2,8 @@ from django.db import models
 
 
 class Calendar(models.Model):
-    start_date = models.DateTimeField(null=False, blank=False)
-    end_date = models.DateTimeField(null=False, blank=False)
+    start_date = models.DateField(null=False, blank=False)
+    end_date = models.DateField(null=False, blank=False)
     poster = models.URLField(null=True, blank=True)
     place = models.CharField(max_length=15)
     runtime = models.TimeField(null=True, blank=True)
