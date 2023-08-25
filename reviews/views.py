@@ -148,13 +148,13 @@ class CategoryBoardReviewList(APIView):
 
         # Create a new review for the specified board in the specified category
         data = request.data
-        data["review_writer"] = request.user.id
+        # data["review_writer"] = request.user.id
         data["review_board"] = board_id
 
         serializer = ReviewSerializer(data=data)
         if serializer.is_valid():
-            serializer = (
-                serializer.save()
+            serializer = serializer.save(
+                review_writer=request.user
             )  # review_writer=request.user, review_board=board_id
             return Response(
                 ReviewAtSerializer(serializer).data, status=HTTP_201_CREATED
