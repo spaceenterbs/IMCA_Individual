@@ -6,7 +6,7 @@ from community_boards.models import Board
 from bigreviews.models import Bigreview
 from bigreviews.serializers import BigreviewSerializer
 from bigreviews.views import CategoryBigreviewList
-from .serializers import ReviewSerializer
+from .serializers import ReviewSerializer, ReviewAtSerializer
 from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -153,8 +153,12 @@ class CategoryBoardReviewList(APIView):
 
         serializer = ReviewSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()  # review_writer=request.user, review_board=board_id
-            return Response(serializer.data, status=HTTP_201_CREATED)
+            serializer = (
+                serializer.save()
+            )  # review_writer=request.user, review_board=board_id
+            return Response(
+                ReviewAtSerializer(serializer).data, status=HTTP_201_CREATED
+            )
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
     @extend_schema(
