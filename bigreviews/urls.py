@@ -14,7 +14,7 @@ urlpatterns = [
     # ),
     path(
         "category/<str:category>/<int:review_id>/",
-        views.CategorReviewBigreviewList.as_view(),
+        views.CategoryReviewBigreviewList.as_view(),
         name="category-bigreview-list",
     ),
 ]

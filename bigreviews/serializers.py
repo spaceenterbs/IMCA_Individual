@@ -14,15 +14,6 @@ class BigreviewSerializer(ModelSerializer):
     class Meta:
         model = Bigreview
         fields = "__all__"
-        # fields = (
-        #     "id",
-        #     "author",
-        #     "parent_review",
-        #     "content",
-        #     "created_at",
-        #     "updated_at",
-        #     "is_blockeded",
-        # )
 
     # def get_total_comments(self, obj):
     #     return obj.bigreviews.count()

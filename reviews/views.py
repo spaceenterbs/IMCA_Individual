@@ -19,101 +19,101 @@ from django.shortcuts import get_object_or_404
 from django.test import RequestFactory
 
 
-class CategoryReviewAndBigreviewList(APIView):
-    @extend_schema(
-        tags=["댓글의 댓글"],
-        summary="카테고리별 댓글과 대댓글 목록을 함께 가져옴",
-        description="카테고리별 댓글과 대댓글의 목록을 함께 가져온다",
-        responses={200: ReviewSerializer(many=True)},
-    )
-    def get(self, request, category, board_id):  # board_id를 추가로 받습니다.
-        # Validate the category input
-        if category not in [choice[0] for choice in Board.CategoryType.choices]:
-            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
+# class CategoryReviewAndBigreviewList(APIView):
+#     @extend_schema(
+#         tags=["댓글의 댓글"],
+#         summary="카테고리별 댓글과 대댓글 목록을 함께 가져옴",
+#         description="카테고리별 댓글과 대댓글의 목록을 함께 가져온다",
+#         responses={200: ReviewSerializer(many=True)},
+#     )
+#     def get(self, request, category, board_id):  # board_id를 추가로 받습니다.
+#         # Validate the category input
+#         if category not in [choice[0] for choice in Board.CategoryType.choices]:
+#             return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
 
-        # Get the specific board using board_id
-        board = get_object_or_404(Board, id=board_id)
+#         # Get the specific board using board_id
+#         board = get_object_or_404(Board, id=board_id)
 
-        # Get reviews and their bigreviews for the specified board
-        reviews = Review.objects.filter(review_board=board)
-        review_id = reviews.values_list("id", flat=True)
-        bigreviews = Bigreview.objects.filter(bigreview_review__in=review_id)
+#         # Get reviews and their bigreviews for the specified board
+#         reviews = Review.objects.filter(review_board=board)
+#         review_id = reviews.values_list("id", flat=True)
+#         bigreviews = Bigreview.objects.filter(bigreview_review__in=review_id)
 
-        # Create a dictionary to store combined data
-        combined_data = []
+#         # Create a dictionary to store combined data
+#         combined_data = []
 
-        # Loop through each review
-        for review in reviews:
-            review_data = ReviewSerializer(review).data
+#         # Loop through each review
+#         for review in reviews:
+#             review_data = ReviewSerializer(review).data
 
-            # Get bigreviews for this review
-            review_bigreviews = bigreviews.filter(bigreview_review=review.id)
-            bigreview_data = BigreviewSerializer(review_bigreviews, many=True).data
+#             # Get bigreviews for this review
+#             review_bigreviews = bigreviews.filter(bigreview_review=review.id)
+#             bigreview_data = BigreviewSerializer(review_bigreviews, many=True).data
 
-            review_data["bigreviews"] = bigreview_data
-            combined_data.append(review_data)
+#             review_data["bigreviews"] = bigreview_data
+#             combined_data.append(review_data)
 
-        return Response(combined_data, status=HTTP_200_OK)
+#         return Response(combined_data, status=HTTP_200_OK)
 
-    # def post(self, request, category, board_id):
-    #     response = CategoryReviewList.as_view()(request, category)
-    #     return response
+#     # def post(self, request, category, board_id):
+#     #     response = CategoryReviewList.as_view()(request, category)
+#     #     return response
 
-    def post(self, request, category, board_id):
-        # Validate the category input
-        if category not in [choice[0] for choice in Board.CategoryType.choices]:
-            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
+# def post(self, request, category, board_id):
+#     # Validate the category input
+#     if category not in [choice[0] for choice in Board.CategoryType.choices]:
+#         return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
 
-        # Get the specific board using board_id
-        board = get_object_or_404(Board, id=board_id)
+#     # Get the specific board using board_id
+#     board = get_object_or_404(Board, id=board_id)
 
-        data = request.data
-        data["review_board"] = board.id  # Adjust this based on your logic
+#     data = request.data
+#     data["review_board"] = board.id  # Adjust this based on your logic
 
-        serializer = ReviewSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=HTTP_201_CREATED)
-        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+#     serializer = ReviewSerializer(data=data)
+#     if serializer.is_valid():
+#         serializer.save()
+#         return Response(serializer.data, status=HTTP_201_CREATED)
+#     return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
-    @extend_schema(
-        tags=["댓글"],
-        summary="댓글 수정",
-        description="댓글을 수정한다.",
-        request=ReviewSerializer,
-        responses={204: "No Content", 400: "Bad Request"},
-    )
-    def put(self, request, category, board_id, review_id):
-        # Validate the category input
-        if category not in [choice[0] for choice in Board.CategoryType.choices]:
-            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
+# @extend_schema(
+#     tags=["댓글"],
+#     summary="댓글 수정",
+#     description="댓글을 수정한다.",
+#     request=ReviewSerializer,
+#     responses={204: "No Content", 400: "Bad Request"},
+# )
+# def put(self, request, category, board_id, review_id):
+#     # Validate the category input
+#     if category not in [choice[0] for choice in Board.CategoryType.choices]:
+#         return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
 
-        # Get the specific review using review_id
-        review = get_object_or_404(Review, id=review_id)
+#     # Get the specific review using review_id
+#     review = get_object_or_404(Review, id=review_id)
 
-        data = request.data
-        serializer = ReviewSerializer(instance=review, data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(status=HTTP_204_NO_CONTENT)
-        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+#     data = request.data
+#     serializer = ReviewSerializer(instance=review, data=data)
+#     if serializer.is_valid():
+#         serializer.save()
+#         return Response(status=HTTP_204_NO_CONTENT)
+#     return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
-    @extend_schema(
-        tags=["댓글"],
-        summary="댓글 삭제",
-        description="댓글을 삭제한다.",
-        responses={204: "No Content"},
-    )
-    def delete(self, request, category, board_id, review_id):
-        # Validate the category input
-        if category not in [choice[0] for choice in Board.CategoryType.choices]:
-            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
+# @extend_schema(
+#     tags=["댓글"],
+#     summary="댓글 삭제",
+#     description="댓글을 삭제한다.",
+#     responses={204: "No Content"},
+# )
+# def delete(self, request, category, board_id, review_id):
+#     # Validate the category input
+#     if category not in [choice[0] for choice in Board.CategoryType.choices]:
+#         return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
 
-        # Get the specific review using review_id
-        review = get_object_or_404(Review, id=review_id)
+#     # Get the specific review using review_id
+#     review = get_object_or_404(Review, id=review_id)
 
-        review.delete()
-        return Response(status=HTTP_204_NO_CONTENT)
+#     review.delete()
+#     return Response(status=HTTP_204_NO_CONTENT)
 
 
 class CategoryBoardReviewList(APIView):
@@ -148,11 +148,12 @@ class CategoryBoardReviewList(APIView):
 
         # Create a new review for the specified board in the specified category
         data = request.data
-        data["board"] = board_id
+        data["review_writer"] = request.user.id
+        data["review_board"] = board_id
 
         serializer = ReviewSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save()  # review_writer=request.user, review_board=board_id
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
