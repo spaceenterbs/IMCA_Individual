@@ -131,7 +131,7 @@ class CategoryBoardReviewList(APIView):
         # Get reviews for the specified board in the specified category
         reviews = Review.objects.filter(review_board=board_id)
 
-        serializer = ReviewSerializer(reviews, many=True)
+        serializer = ReviewAtSerializer(reviews, many=True)
         return Response(serializer.data, HTTP_200_OK)
 
     @extend_schema(
