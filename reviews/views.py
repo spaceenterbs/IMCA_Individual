@@ -59,7 +59,7 @@ class CategoryReviewAndBigreviewList(APIView):
     #     response = CategoryReviewList.as_view()(request, category)
     #     return response
 
-    def post_review(self, request, category, board_id):
+    def post(self, request, category, board_id):
         # Validate the category input
         if category not in [choice[0] for choice in Board.CategoryType.choices]:
             return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
@@ -83,7 +83,7 @@ class CategoryReviewAndBigreviewList(APIView):
         request=ReviewSerializer,
         responses={204: "No Content", 400: "Bad Request"},
     )
-    def put_review(self, request, category, board_id, review_id):
+    def put(self, request, category, board_id, review_id):
         # Validate the category input
         if category not in [choice[0] for choice in Board.CategoryType.choices]:
             return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
@@ -104,7 +104,7 @@ class CategoryReviewAndBigreviewList(APIView):
         description="댓글을 삭제한다.",
         responses={204: "No Content"},
     )
-    def delete_review(self, request, category, board_id, review_id):
+    def delete(self, request, category, board_id, review_id):
         # Validate the category input
         if category not in [choice[0] for choice in Board.CategoryType.choices]:
             return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
