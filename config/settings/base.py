@@ -7,7 +7,7 @@ from django.core.exceptions import ImproperlyConfigured
 env = environ.Env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -26,7 +26,7 @@ SECRET_KEY = get_env_variable("SECRET_KEY")
 API_KEY = get_env_variable("API_KEY")
 SERVER_API_KEY = get_env_variable("SERVER_API_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = get_env_variable("DEBUG")
+# DEBUG = get_env_variable("DEBUG")
 # DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
@@ -82,7 +82,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.TokenAuthentication",
-        # "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
@@ -114,22 +114,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "config.wsgi.application"
+# WSGI_APPLICATION = "config.wsgi.application"
 
-
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
-
-
-# Password validation
-# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -148,9 +134,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = "users.User"
 
-# Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/
-
 LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "Asia/Seoul"
@@ -163,7 +146,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
