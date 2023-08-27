@@ -12,10 +12,13 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.hashers import check_password
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
+
+
 class UserRegister(APIView):
     """
     회원가입 API
     """
+
     @extend_schema(
         tags=["회원가입"],
         description="회원가입",
@@ -59,10 +62,13 @@ class UserRegister(APIView):
             res.set_cookie("refresh", refresh_token, httponly=True)
             return res
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class UserAuth(APIView):
     """
     로그인 기능
     """
+
     @extend_schema(
         tags=["로그인"],
         description="로그인",
@@ -109,6 +115,7 @@ class UserAuth(APIView):
             login(request, user)
             return res
         return Response({"user": user}, status=status.HTTP_400_BAD_REQUEST)
+
     @extend_schema(
         tags=["로그아웃"],
         description="로그아웃",
@@ -157,7 +164,16 @@ class UserInfo(APIView):
     def put(self, request):
         queryset = request.user
         serializer = serializers.UserInfoSerializer(
-@@ -166,17 +180,29 @@ def put(self, request):
+            queryset,
+            data=request.data,
+            partial=True,
+        )
+        if serializer.is_valid():
+            user = serializer.save()
+            serializer = serializers.UserInfoSerializer(user)
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors)
 
 
 class ChangePassword(APIView):
@@ -174,7 +190,6 @@ class ChangePassword(APIView):
     )
     def put(self, request):
         user = request.user
-        
         # old_password = request.data.get("old_password")
         new_password = request.data.get("new_password")
         if not new_password:
