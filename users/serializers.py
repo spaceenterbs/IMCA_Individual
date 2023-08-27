@@ -51,3 +51,13 @@ class SemiUserSerializer(serializers.ModelSerializer):
             "profileImg",
             "email",
         )
+
+
+class UserInfoSerializer(serializers.ModelSerializer):
+    """
+    유저 인포메이션
+    """
+
+    class Meta:
+        model = User
+        fields = "__all__"
