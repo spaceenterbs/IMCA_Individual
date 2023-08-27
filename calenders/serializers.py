@@ -12,13 +12,13 @@ class SemiInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Calendar
         fields = (
+            "pk",
             "start_date",
             "end_date",
-            "name",
         )
 
 
 class DetailInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Calendar
-        exclude = ("id", "owner")
+        exclude = ("owner",)

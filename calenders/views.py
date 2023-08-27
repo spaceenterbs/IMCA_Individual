@@ -12,17 +12,15 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExampl
 
 
 class Calendarinfo(APIView):
-    authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
         tags=["마이 캘린더 일정"],
         description="마이 캘린더 일정",
-        responses=serializers.SemiInfoSerializer,
+        responses=serializers.DetailInfoSerializer,
     )
     def get(self, request):
-        print(dir(request))
-        print("유저", request.user)
         calendar = Calendar.objects.filter(owner=request.user)
         serializer = serializers.SemiInfoSerializer(calendar, many=True)
         return Response(serializer.data)
@@ -58,9 +56,20 @@ class Calendarinfo(APIView):
             return Response(serializer.errors)
 
 
-class CalendarDetail(APIView):
+class CalendarMenu(APIView):
     authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        date = request.GET["date"]
+        cal = Calendar.objects.filter(owner=request.user).filter(start_date=date)
+        serializer = serializers.DetailInfoSerializer(cal, many=True)
+        return Response(serializer.data)
+
+
+class CalendarDetail(APIView):
+    # authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
         tags=["디테일 일정"],
