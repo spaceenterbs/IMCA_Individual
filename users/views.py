@@ -1,7 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.exceptions import ParseError, NotFound
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import User
@@ -10,13 +12,10 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.hashers import check_password
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
-
-
 class UserRegister(APIView):
     """
     회원가입 API
     """
-
     @extend_schema(
         tags=["회원가입"],
         description="회원가입",
@@ -60,13 +59,10 @@ class UserRegister(APIView):
             res.set_cookie("refresh", refresh_token, httponly=True)
             return res
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 class UserAuth(APIView):
     """
     로그인 기능
     """
-
     @extend_schema(
         tags=["로그인"],
         description="로그인",
@@ -86,15 +82,12 @@ class UserAuth(APIView):
     def post(self, request):
         login_id = request.data.get("login_id")
         password = request.data.get("password")
-
         try:
             user = User.objects.get(login_id=login_id)
         except User.DoesNotExist:
             raise NotFound
-
         if not check_password(password, user.password):
             return Response({"message": "비밀번호가 맞지 않습니다."})
-
         if user:
             serializer = serializers.UserSerializer(user)
             token = TokenObtainPairSerializer.get_token(user)
@@ -116,7 +109,6 @@ class UserAuth(APIView):
             login(request, user)
             return res
         return Response({"user": user}, status=status.HTTP_400_BAD_REQUEST)
-
     @extend_schema(
         tags=["로그아웃"],
         description="로그아웃",
@@ -138,3 +130,61 @@ class UserAuth(APIView):
         res.delete_cookie("refresh")
         logout(request)
         return res
+
+
+class UserInfo(APIView):
+    """
+    마이페이지
+    """
+
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        tags=["마이페이지"],
+        description="마이페이지",
+        responses=serializers.UserInfoSerializer,
+    )
+    def get(self, request):
+        queryset = request.user
+        return Response(serializers.UserInfoSerializer(queryset).data)
+
+    @extend_schema(
+        tags=["마이페이지"],
+        description="마이페이지",
+        responses=serializers.UserInfoSerializer,
+    )
+    def put(self, request):
+        queryset = request.user
+        serializer = serializers.UserInfoSerializer(
+@@ -166,17 +180,29 @@ def put(self, request):
+
+
+class ChangePassword(APIView):
+    """
+    비밀번호 변경
+    """
+
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        tags=["패스워드 변경"],
+        description="패스워드 변경",
+    )
+    def put(self, request):
+        user = request.user
+        
+        # old_password = request.data.get("old_password")
+        new_password = request.data.get("new_password")
+        if not new_password:
+            raise ParseError
+        if not user.check_password(new_password):
+            user.set_password(new_password)
+            user.save()
+            return Response({"message": "비밀번호 변경 완료"}, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {"message": "이전 비밀번호와 다른 비밀번호를 입력해주세요"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
