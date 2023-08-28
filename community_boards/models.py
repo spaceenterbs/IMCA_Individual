@@ -18,7 +18,6 @@ class Board(CommonModel):
         related_name="boards_user",  # 사용자 입장에서 해당 사용자가 작성한 게시글들을 가져올 때 사용할 이름
     )
     Image = models.URLField(blank=True, null=True)  # 이미지
-    # file = models.FileField(upload_to="file", blank=True)
     title = models.CharField(max_length=30, null=False, blank=False)
     content = models.TextField(null=False, blank=False)
     category = models.CharField(max_length=12, choices=CategoryType.choices)

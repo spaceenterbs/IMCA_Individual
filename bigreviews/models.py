@@ -18,3 +18,8 @@ class Bigreview(CommonModel):
 
     def __str__(self):
         return self.bigreview_content
+
+    # def save(self, *args, **kwargs):
+    #     if not self.bigreview_writer:
+    #         self.bigreview_writer = self.request.user
+    #     super().save(*args, **kwargs)

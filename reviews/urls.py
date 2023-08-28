@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views import ReviewCreate, BigreviewCreate
 
 urlpatterns = [
     # path(
@@ -22,4 +23,19 @@ urlpatterns = [
         views.CategoryReviewAndBigreviewList.as_view(),
         name="category-gather-review",
     ),
+    # path(
+    #     "create/",  # 댓글 생성 API에 접근할 수 있게 된다.
+    #     ReviewCreate.as_view(),
+    #     name="create-review",
+    # ),
+    # path(
+    #     "create/",  # 댓글 생성 API에 접근할 수 있게 된다.
+    #     BigreviewCreate.as_view(),
+    #     name="create-review",
+    # ),
+    # path(
+    #     "<int:review_board_id>/",
+    #     views.ReviewList.as_view(),
+    #     name="review-list",
+    # ),
 ]

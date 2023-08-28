@@ -18,3 +18,9 @@ class Review(CommonModel):
 
     def __str__(self):
         return self.review_content
+
+    # def save(self, *args, **kwargs):
+    #     # review_writer 필드가 비어 있으면 현재 로그인한 사용자로 설정
+    #     if not self.review_writer:
+    #         self.review_writer = self.request.user
+    #     super().save(*args, **kwargs)
