@@ -6,13 +6,15 @@ from users.serializers import SemiUserSerializer
 
 
 class BoardSerializer(serializers.ModelSerializer):
-    board_writer = SemiUserSerializer(read_only=True)
     created_at = serializers.DateTimeField(
         format="%Y-%m-%d %H:%M", read_only=True
     )  # 년-월-일 시:분 형식으로 변환
     updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M", read_only=True)
     likes_count = serializers.SerializerMethodField()  # 추가된 필드
     reviews_count = serializers.SerializerMethodField()
+    writer = SemiUserSerializer(
+        read_only=True
+    )  # serializer에서는 writer를 SemiUserSerializer로 표현
 
     class Meta:
         model = Board
