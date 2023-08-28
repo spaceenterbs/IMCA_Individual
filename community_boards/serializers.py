@@ -6,9 +6,11 @@ from users.serializers import SemiUserSerializer
 
 
 class BoardSerializer(serializers.ModelSerializer):
-    author = SemiUserSerializer(read_only=True)
-    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")  # 년-월-일 시:분 형식으로 변환
-    updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
+    board_writer = SemiUserSerializer(read_only=True)
+    created_at = serializers.DateTimeField(
+        format="%Y-%m-%d %H:%M", read_only=True
+    )  # 년-월-일 시:분 형식으로 변환
+    updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M", read_only=True)
     likes_count = serializers.SerializerMethodField()  # 추가된 필드
     reviews_count = serializers.SerializerMethodField()
 
@@ -22,7 +24,7 @@ class BoardSerializer(serializers.ModelSerializer):
     def get_reviews_count(self, obj):  # 추가된 필드 앞에 get_를 붙여줘야 한다.
         reviews = obj.reviews.all()
         total_comments_count = sum(
-            reviews.bigreviews.count() + 1 for review in reviews
+            review.bigreviews.count() + 1 for review in reviews
         )  # 반복문의 review는 임시 변수
         return total_comments_count
 
