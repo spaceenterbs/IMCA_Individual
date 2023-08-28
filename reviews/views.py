@@ -1,4 +1,4 @@
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Review
@@ -25,6 +25,43 @@ class CategoryReviewAndBigreviewList(APIView):
         summary="카테고리별 댓글과 대댓글 목록을 함께 가져옴",
         description="카테고리별 댓글과 대댓글의 목록을 함께 가져온다",
         responses={200: ReviewSerializer(many=True)},
+        examples=[
+            OpenApiExample(
+                response_only=True,
+                summary="카테고리별 댓글과 대댓글 목록입니다.",
+                name="Review&Bigreview",
+                value={
+                    "id": 1,
+                    "writer_profile_img": "null",
+                    "created_at": "2023-08-28 14:15",
+                    "updated_at": "2023-08-28 14:15",
+                    "review_writer": {
+                        "nickname": "IMCA",
+                        "profileImg": "null",
+                        "email": "admin@gmail.com",
+                    },
+                    "review_content": "11",
+                    "is_blocked": "false",
+                    "review_board": 1,
+                    "bigreviews": [
+                        {
+                            "id": 1,
+                            "created_at": "2023-08-28 14:15",
+                            "updated_at": "2023-08-28 14:15",
+                            "writer_profile_img": "null",
+                            "bigreview_writer": {
+                                "nickname": "IMCA",
+                                "profileImg": "null",
+                                "email": "admin@gmail.com",
+                            },
+                            "bigreview_content": "1111",
+                            "is_blocked": "false",
+                            "bigreview_review": 1,
+                        }
+                    ],
+                },
+            )
+        ],
     )
     def get(self, request, category, board_id):  # board_id를 추가로 받습니다.
         # Validate the category input
@@ -132,7 +169,7 @@ class CategoryBoardReviewList(APIView):
         # Get reviews for the specified board in the specified category
         reviews = Review.objects.filter(review_board=board_id)
 
-        serializer = ReviewAtSerializer(reviews, many=True)
+        serializer = ReviewSerializer(reviews, many=True)
         return Response(serializer.data, HTTP_200_OK)
 
     @extend_schema(
