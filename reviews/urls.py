@@ -12,14 +12,14 @@ urlpatterns = [
     #     views.CategoryReviewList.as_view(),
     #     name="category-review-list",
     # ),
-    path(
-        "category/<str:category>/<int:board_id>/",
-        views.CategoryBoardReviewList.as_view(),
-        name="category-board-review-list",
-    ),
     # path(
-    #     "category_gather_review/<str:category>/<int:board_id>/",
-    #     views.CategoryReviewAndBigreviewList.as_view(),
-    #     name="category-gather-review",
+    #     "category/<str:category>/<int:board_id>/",
+    #     views.CategoryBoardReviewList.as_view(),
+    #     name="category-board-review-list",
     # ),
+    path(
+        "category_gather_review/<str:category>/<int:board_id>/",
+        views.CategoryReviewAndBigreviewList.as_view(),
+        name="category-gather-review",
+    ),
 ]
