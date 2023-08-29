@@ -79,20 +79,23 @@ class CategoryBoards(APIView):
         responses={201: BoardSerializer()},
     )
     def post(self, request, category):
-        # Validate the category input (same as in the get method)
         if category not in [choice[0] for choice in Board.CategoryType.choices]:
-            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Invalid category"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
-        # Deserialize the request data using the serializer
-        serializer = BoardSerializer(data=request.data)
+        serializer = BoardSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
-            # Assign the writer and category to the board
+            # Set the category and writer
+            serializer.validated_data["category"] = category
             serializer.validated_data["writer"] = request.user
 
             # Save the new board instance
-            serializer.save()
-            return Response(serializer.data, status=HTTP_201_CREATED)
-        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+            board = serializer.save()
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CategoryBoardDetail(APIView):
