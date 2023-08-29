@@ -24,6 +24,9 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 class UnauthenticatedCategoryReviewAndBigreviewList(APIView):
+    authentication_classes = []  # 토큰 인증 비활성화
+    permission_classes = []  # 인증 없이 접근 가능
+
     @extend_schema(
         tags=["댓글과 대댓글"],
         summary="카테고리별 댓글과 대댓글 목록을 함께 가져옴",

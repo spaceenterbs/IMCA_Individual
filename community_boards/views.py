@@ -36,6 +36,9 @@ class CustomPagination(PageNumberPagination):
 
 
 class UnauthenticatedCategoryBoards(APIView):
+    authentication_classes = []  # 토큰 인증 비활성화
+    permission_classes = []  # 인증 없이 접근 가능
+
     @extend_schema(
         summary="카테고리별 게시글 리스트를 가져오고, 페이지네이션을 처리함. ?page=<int:page>",
         description="각 카테고리별 게시판의 게시글을 가져오고, 페이지네이션을 처리한다.?page=<int:page>없이 요청하면 기본적으로 1페이지를 가져온다.?page=<int:page>를 사용하여 페이지를 지정할 수 있다.",
@@ -106,6 +109,9 @@ class CategoryBoards(APIView):
 
 
 class UnauthenticatedCategoryBoardDetail(APIView):
+    authentication_classes = []  # 토큰 인증 비활성화
+    permission_classes = []  # 인증 없이 접근 가능
+
     @extend_schema(
         tags=["게시판 게시글 API"],
         summary="카테고리별 상세 게시글을 가져옴.",
@@ -204,6 +210,9 @@ class CategoryBoardDetail(APIView):
 
 
 class UnauthenticatedCategoryBoardLike(APIView):
+    authentication_classes = []  # 토큰 인증 비활성화
+    permission_classes = []  # 인증 없이 접근 가능
+
     @extend_schema(
         tags=["게시글 좋아요 API"],
         summary="게시글 좋아요 개수 확인",
