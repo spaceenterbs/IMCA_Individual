@@ -2,6 +2,7 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from .models import Review
 from users.serializers import SemiUserSerializer
+from django.contrib.auth.models import AnonymousUser
 
 
 class ReviewSerializer(ModelSerializer):
@@ -14,3 +15,14 @@ class ReviewSerializer(ModelSerializer):
     class Meta:
         model = Review
         fields = "__all__"
+
+    def create(self, validated_data):
+        # 'review_writer' 필드를 현재 사용자 인스턴스 또는 None으로 설정합니다.
+        request_user = self.context["request"].user
+
+        if isinstance(request_user, AnonymousUser):
+            validated_data["review_writer"] = None
+        else:
+            validated_data["review_writer"] = request_user
+
+        return super().create(validated_data)

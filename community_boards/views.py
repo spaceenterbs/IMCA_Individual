@@ -35,6 +35,32 @@ class CustomPagination(PageNumberPagination):
 
 class CategoryBoards(APIView):
     @extend_schema(
+        tags=["게시판 게시글 API"],
+        summary="새로운 게시글을 작성함.",
+        description="새로운 게시글을 작성한다.",
+        request=BoardSerializer,
+        responses={201: BoardSerializer()},
+    )
+    def post(self, request, category):
+        if category not in [choice[0] for choice in Board.CategoryType.choices]:
+            return Response(
+                {"error": "Invalid category"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = BoardSerializer(data=request.data, context={"request": request})
+        if serializer.is_valid():
+            # Set the category and writer
+            serializer.validated_data["category"] = category
+            serializer.validated_data["writer"] = request.user
+
+            # Save the new board instance
+            board = serializer.save()
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
         summary="카테고리별 게시글 리스트를 가져오고, 페이지네이션을 처리함. ?page=<int:page>",
         description="각 카테고리별 게시판의 게시글을 가져오고, 페이지네이션을 처리한다.?page=<int:page>없이 요청하면 기본적으로 1페이지를 가져온다.?page=<int:page>를 사용하여 페이지를 지정할 수 있다.",
         responses={200: BoardSerializer(many=True)},
@@ -70,32 +96,6 @@ class CategoryBoards(APIView):
         #     return redirect(request.path + "?page=1")
 
         return Response(pagination_data)
-
-    @extend_schema(
-        tags=["게시판 게시글 API"],
-        summary="새로운 게시글을 작성함.",
-        description="새로운 게시글을 작성한다.",
-        request=BoardSerializer,
-        responses={201: BoardSerializer()},
-    )
-    def post(self, request, category):
-        if category not in [choice[0] for choice in Board.CategoryType.choices]:
-            return Response(
-                {"error": "Invalid category"}, status=status.HTTP_400_BAD_REQUEST
-            )
-
-        serializer = BoardSerializer(data=request.data, context={"request": request})
-        if serializer.is_valid():
-            # Set the category and writer
-            serializer.validated_data["category"] = category
-            serializer.validated_data["writer"] = request.user
-
-            # Save the new board instance
-            board = serializer.save()
-
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CategoryBoardDetail(APIView):

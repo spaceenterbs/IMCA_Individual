@@ -14,6 +14,7 @@ from rest_framework.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 from django.shortcuts import get_object_or_404
+from rest_framework import status
 
 
 class CategoryReviewBigreviewList(APIView):
@@ -93,7 +94,7 @@ class CategoryReviewBigreviewList(APIView):
         tags=["댓글의 댓글"],
         summary="카테고리별 대댓글 삭제",
         description="카테고리별 대댓글을 삭제한다.",
-        responses={204: "No Content"},
+        responses={204: status.HTTP_204_NO_CONTENT},
     )
     def delete(self, request, category, review_id):
         # Validate the category input
@@ -214,7 +215,7 @@ class CategoryBigreviewList(APIView):
         tags=["댓글의 댓글"],
         summary="카테고리별 대댓글 삭제",
         description="카테고리별 대댓글을 삭제한다.",
-        responses={204: "No Content"},
+        responses={204: status.HTTP_204_NO_CONTENT},
     )
     def delete(self, request, category):
         # Validate the category input
@@ -286,7 +287,7 @@ class CategoryBigreviewList(APIView):
 #         tags=["댓글의 댓글"],
 #         summary="대댓글 삭제",
 #         description="대댓글을 삭제한다.",
-#         responses={204: "No Content"},
+#         responses={204: status.HTTP_204_NO_CONTENT},
 #     )
 #     def delete(self, request, pk):
 #         bigreview = self.get_object(pk)
@@ -383,7 +384,7 @@ class CategoryBigreviewList(APIView):
 #         tags=["댓글의 댓글"],
 #         summary="대댓글 삭제",
 #         description="대댓글을 삭제한다.",
-#         responses={204: "No Content"},
+#         responses={204: status.HTTP_204_NO_CONTENT},
 #     )
 #     def delete(self, request, pk):
 #         bigreview = self.get_object(pk)
