@@ -19,6 +19,8 @@ from rest_framework.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 from django.shortcuts import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 # class BoardPagination(PageNumberPagination):
@@ -34,6 +36,9 @@ class CustomPagination(PageNumberPagination):
 
 
 class CategoryBoards(APIView):
+    authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
+    permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
+
     @extend_schema(
         tags=["게시판 게시글 API"],
         summary="새로운 게시글을 작성함.",
@@ -99,6 +104,9 @@ class CategoryBoards(APIView):
 
 
 class CategoryBoardDetail(APIView):
+    authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
+    permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
+
     @extend_schema(
         tags=["게시판 게시글 API"],
         summary="카테고리별 상세 게시글을 가져옴.",
@@ -192,6 +200,9 @@ class CategoryBoardDetail(APIView):
 
 
 class CategoryBoardLike(APIView):
+    authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
+    permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
+
     @extend_schema(
         tags=["게시글 좋아요 API"],
         summary="게시글 좋아요 개수 확인",

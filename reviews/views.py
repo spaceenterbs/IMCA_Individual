@@ -19,10 +19,13 @@ from django.shortcuts import get_object_or_404
 from django.test import RequestFactory
 from rest_framework import status
 from django.contrib.auth.models import AnonymousUser
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 class CategoryReviewAndBigreviewList(APIView):
-    permission_classes = []  # [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
+    permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
 
     @extend_schema(
         tags=["댓글과 대댓글"],

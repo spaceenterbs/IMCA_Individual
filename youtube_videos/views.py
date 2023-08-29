@@ -12,9 +12,14 @@ from rest_framework.status import (
 )
 from django.db.models import F
 from datetime import datetime, timedelta
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 class Youtube_Videos(APIView):
+    # authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
+    # permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
+
     @extend_schema(
         tags=["youtube_videos 게시글 API"],
         summary="youtube_videos 게시글 리스트를 가져옴",
@@ -48,6 +53,9 @@ class Youtube_Videos(APIView):
 
 
 class Youtube_VideoDetail(APIView):
+    # authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
+    # permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
+
     @extend_schema(
         tags=["youtube_videos 게시글 API"],
         summary="youtube_videos 상세 게시글을 가져옴.",
