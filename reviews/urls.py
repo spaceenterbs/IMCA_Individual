@@ -8,6 +8,11 @@ urlpatterns = [
         views.CategoryReviewAndBigreviewList.as_view(),
         name="category-gather-review",
     ),
+    path(
+        "category_gather_review/<str:category>/<int:board_id>/",
+        views.UnauthenticatedCategoryReviewAndBigreviewList.as_view(),
+        name="category-gather-review",
+    ),
 ]
 # path(
 #     "",

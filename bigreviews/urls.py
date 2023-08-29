@@ -14,6 +14,11 @@ urlpatterns = [
     # ),
     path(
         "category/<str:category>/<int:review_id>/",
+        views.UnauthenticatedCategoryReviewBigreviewList.as_view(),
+        name="category-bigreview-list",
+    ),
+    path(
+        "category/<str:category>/<int:review_id>/",
         views.CategoryReviewBigreviewList.as_view(),
         name="category-bigreview-list",
     ),

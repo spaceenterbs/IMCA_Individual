@@ -23,6 +23,80 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
+class UnauthenticatedCategoryReviewAndBigreviewList(APIView):
+    @extend_schema(
+        tags=["댓글과 대댓글"],
+        summary="카테고리별 댓글과 대댓글 목록을 함께 가져옴",
+        description="카테고리별 댓글과 대댓글의 목록을 함께 가져온다",
+        responses={200: ReviewSerializer(many=True)},
+        examples=[
+            OpenApiExample(
+                response_only=True,
+                summary="카테고리별 댓글과 대댓글 목록입니다.",
+                name="Review&Bigreview",
+                value={
+                    "id": 1,
+                    "writer_profile_img": "null",
+                    "created_at": "2023-08-28 14:15",
+                    "updated_at": "2023-08-28 14:15",
+                    "review_writer": {
+                        "nickname": "IMCA",
+                        "profileImg": "null",
+                        "email": "admin@gmail.com",
+                    },
+                    "review_content": "11",
+                    "is_blocked": "false",
+                    "review_board": 1,
+                    "bigreviews": [
+                        {
+                            "id": 1,
+                            "created_at": "2023-08-28 14:15",
+                            "updated_at": "2023-08-28 14:15",
+                            "writer_profile_img": "null",
+                            "bigreview_writer": {
+                                "nickname": "IMCA",
+                                "profileImg": "null",
+                                "email": "admin@gmail.com",
+                            },
+                            "bigreview_content": "1111",
+                            "is_blocked": "false",
+                            "bigreview_review": 1,
+                        }
+                    ],
+                },
+            )
+        ],
+    )
+    def get(self, request, category, board_id):  # board_id를 추가로 받습니다.
+        # Validate the category input
+        if category not in [choice[0] for choice in Board.CategoryType.choices]:
+            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
+
+        # Get the specific board using board_id
+        board = get_object_or_404(Board, id=board_id)
+
+        # Get reviews and their bigreviews for the specified board
+        reviews = Review.objects.filter(review_board=board)
+        review_id = reviews.values_list("id", flat=True)
+        bigreviews = Bigreview.objects.filter(bigreview_review__in=review_id)
+
+        # Create a dictionary to store combined data
+        combined_data = []
+
+        # Loop through each review
+        for review in reviews:
+            review_data = ReviewSerializer(review).data
+
+            # Get bigreviews for this review
+            bigreviews_in_review = bigreviews.filter(bigreview_review=review.id)
+            bigreview_data = BigreviewSerializer(bigreviews_in_review, many=True).data
+
+            review_data["bigreviews"] = bigreview_data
+            combined_data.append(review_data)
+
+        return Response(combined_data, status=HTTP_200_OK)
+
+
 class CategoryReviewAndBigreviewList(APIView):
     authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
     permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
@@ -181,78 +255,6 @@ class CategoryReviewAndBigreviewList(APIView):
                     )
         except (Review.DoesNotExist, Bigreview.DoesNotExist):
             return Response(status=status.HTTP_404_NOT_FOUND)
-
-    @extend_schema(
-        tags=["댓글과 대댓글"],
-        summary="카테고리별 댓글과 대댓글 목록을 함께 가져옴",
-        description="카테고리별 댓글과 대댓글의 목록을 함께 가져온다",
-        responses={200: ReviewSerializer(many=True)},
-        examples=[
-            OpenApiExample(
-                response_only=True,
-                summary="카테고리별 댓글과 대댓글 목록입니다.",
-                name="Review&Bigreview",
-                value={
-                    "id": 1,
-                    "writer_profile_img": "null",
-                    "created_at": "2023-08-28 14:15",
-                    "updated_at": "2023-08-28 14:15",
-                    "review_writer": {
-                        "nickname": "IMCA",
-                        "profileImg": "null",
-                        "email": "admin@gmail.com",
-                    },
-                    "review_content": "11",
-                    "is_blocked": "false",
-                    "review_board": 1,
-                    "bigreviews": [
-                        {
-                            "id": 1,
-                            "created_at": "2023-08-28 14:15",
-                            "updated_at": "2023-08-28 14:15",
-                            "writer_profile_img": "null",
-                            "bigreview_writer": {
-                                "nickname": "IMCA",
-                                "profileImg": "null",
-                                "email": "admin@gmail.com",
-                            },
-                            "bigreview_content": "1111",
-                            "is_blocked": "false",
-                            "bigreview_review": 1,
-                        }
-                    ],
-                },
-            )
-        ],
-    )
-    def get(self, request, category, board_id):  # board_id를 추가로 받습니다.
-        # Validate the category input
-        if category not in [choice[0] for choice in Board.CategoryType.choices]:
-            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
-
-        # Get the specific board using board_id
-        board = get_object_or_404(Board, id=board_id)
-
-        # Get reviews and their bigreviews for the specified board
-        reviews = Review.objects.filter(review_board=board)
-        review_id = reviews.values_list("id", flat=True)
-        bigreviews = Bigreview.objects.filter(bigreview_review__in=review_id)
-
-        # Create a dictionary to store combined data
-        combined_data = []
-
-        # Loop through each review
-        for review in reviews:
-            review_data = ReviewSerializer(review).data
-
-            # Get bigreviews for this review
-            bigreviews_in_review = bigreviews.filter(bigreview_review=review.id)
-            bigreview_data = BigreviewSerializer(bigreviews_in_review, many=True).data
-
-            review_data["bigreviews"] = bigreview_data
-            combined_data.append(review_data)
-
-        return Response(combined_data, status=HTTP_200_OK)
 
 
 # def post(self, request, category, board_id):

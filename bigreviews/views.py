@@ -19,10 +19,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
-class CategoryReviewBigreviewList(APIView):
-    authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
-    permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
-
+class UnauthenticatedCategoryReviewBigreviewList(APIView):
     @extend_schema(
         tags=["댓글의 댓글"],
         summary="카테고리별 대댓글 목록을 가져옴",
@@ -39,6 +36,11 @@ class CategoryReviewBigreviewList(APIView):
 
         serializer = BigreviewSerializer(bigreviews, many=True)
         return Response(serializer.data)
+
+
+class CategoryReviewBigreviewList(APIView):
+    authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
+    permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
 
     @extend_schema(
         tags=["댓글의 댓글"],

@@ -13,8 +13,18 @@ urlpatterns = [
         name="board_like",
     ),
     path(
+        "category/<str:category>/<int:pk>/like/",
+        views.UnauthenticatedCategoryBoardLike.as_view(),
+        name="board_like",
+    ),
+    path(
         "category/<str:category>/",
         views.CategoryBoards.as_view(),
+        name="board_category",
+    ),
+    path(
+        "category/<str:category>/",
+        views.UnauthenticatedCategoryBoards.as_view(),
         name="board_category",
     ),
     # path(
@@ -30,6 +40,11 @@ urlpatterns = [
     path(
         "category/<str:category>/detail/<int:pk>/",
         views.CategoryBoardDetail.as_view(),
+        name="board_category_detail",
+    ),
+    path(
+        "category/<str:category>/detail/<int:pk>/",
+        views.UnauthenticatedCategoryBoardDetail.as_view(),
         name="board_category_detail",
     ),
     path(

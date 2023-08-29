@@ -35,36 +35,7 @@ class CustomPagination(PageNumberPagination):
     max_page_size = 100
 
 
-class CategoryBoards(APIView):
-    authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
-    permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
-
-    @extend_schema(
-        tags=["게시판 게시글 API"],
-        summary="새로운 게시글을 작성함.",
-        description="새로운 게시글을 작성한다.",
-        request=BoardSerializer,
-        responses={201: BoardSerializer()},
-    )
-    def post(self, request, category):
-        if category not in [choice[0] for choice in Board.CategoryType.choices]:
-            return Response(
-                {"error": "Invalid category"}, status=status.HTTP_400_BAD_REQUEST
-            )
-
-        serializer = BoardSerializer(data=request.data, context={"request": request})
-        if serializer.is_valid():
-            # Set the category and writer
-            serializer.validated_data["category"] = category
-            serializer.validated_data["writer"] = request.user
-
-            # Save the new board instance
-            board = serializer.save()
-
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+class UnauthenticatedCategoryBoards(APIView):
     @extend_schema(
         summary="카테고리별 게시글 리스트를 가져오고, 페이지네이션을 처리함. ?page=<int:page>",
         description="각 카테고리별 게시판의 게시글을 가져오고, 페이지네이션을 처리한다.?page=<int:page>없이 요청하면 기본적으로 1페이지를 가져온다.?page=<int:page>를 사용하여 페이지를 지정할 수 있다.",
@@ -103,10 +74,38 @@ class CategoryBoards(APIView):
         return Response(pagination_data)
 
 
-class CategoryBoardDetail(APIView):
+class CategoryBoards(APIView):
     authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
     permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
 
+    @extend_schema(
+        tags=["게시판 게시글 API"],
+        summary="새로운 게시글을 작성함.",
+        description="새로운 게시글을 작성한다.",
+        request=BoardSerializer,
+        responses={201: BoardSerializer()},
+    )
+    def post(self, request, category):
+        if category not in [choice[0] for choice in Board.CategoryType.choices]:
+            return Response(
+                {"error": "Invalid category"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = BoardSerializer(data=request.data, context={"request": request})
+        if serializer.is_valid():
+            # Set the category and writer
+            serializer.validated_data["category"] = category
+            serializer.validated_data["writer"] = request.user
+
+            # Save the new board instance
+            board = serializer.save()
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UnauthenticatedCategoryBoardDetail(APIView):
     @extend_schema(
         tags=["게시판 게시글 API"],
         summary="카테고리별 상세 게시글을 가져옴.",
@@ -149,6 +148,11 @@ class CategoryBoardDetail(APIView):
             return Response({"error": "Board not found"}, status=HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class CategoryBoardDetail(APIView):
+    authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
+    permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
 
     @extend_schema(
         tags=["게시판 게시글 API"],
@@ -199,10 +203,7 @@ class CategoryBoardDetail(APIView):
             return Response({"error": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class CategoryBoardLike(APIView):
-    authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
-    permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
-
+class UnauthenticatedCategoryBoardLike(APIView):
     @extend_schema(
         tags=["게시글 좋아요 API"],
         summary="게시글 좋아요 개수 확인",
@@ -235,6 +236,11 @@ class CategoryBoardLike(APIView):
             return Response({"error": "Board not found"}, status=HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class CategoryBoardLike(APIView):
+    authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
+    permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
 
     @extend_schema(
         tags=["게시글 좋아요 API"],
