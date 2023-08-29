@@ -9,7 +9,7 @@ urlpatterns = [
         name="category-gather-review",
     ),
     path(
-        "category_gather_review/<str:category>/<int:board_id>/",
+        "category_gather_review/<str:category>/<int:board_id>/get/",
         views.UnauthenticatedCategoryReviewAndBigreviewList.as_view(),
         name="category-gather-review",
     ),
