@@ -5,7 +5,7 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.exceptions import ParseError, NotFound
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, RefreshToken
 from .models import User
 from . import serializers
 from django.contrib.auth import login, logout
@@ -88,12 +88,15 @@ class UserAuth(APIView):
     def post(self, request):
         login_id = request.data.get("login_id")
         password = request.data.get("password")
+
         try:
             user = User.objects.get(login_id=login_id)
         except User.DoesNotExist:
             raise NotFound
+
         if not check_password(password, user.password):
             return Response({"message": "비밀번호가 맞지 않습니다."})
+
         if user:
             serializer = serializers.UserSerializer(user)
             token = TokenObtainPairSerializer.get_token(user)
@@ -133,6 +136,9 @@ class UserAuth(APIView):
         로그아웃
         """
         res = Response({"message": "로그아웃 되었습니다."}, status=status.HTTP_200_OK)
+        refresh_token = request.COOKIES.get("refresh")
+        token = RefreshToken(refresh_token)
+        token.blacklist()
         res.delete_cookie("access")
         res.delete_cookie("refresh")
         logout(request)

@@ -27,6 +27,7 @@ from drf_spectacular.views import (
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/v1/auth/", include("allauth.urls")),
     path("api/v1/users/", include("users.urls")),
     path("api/v1/youtube_video/", include("youtube_videos.urls")),
     path("api/v1/community_board/", include("community_boards.urls")),
@@ -34,14 +35,13 @@ urlpatterns = [
     path("api/v1/bigreview/", include("bigreviews.urls")),
     path("api/v1/calendar/", include("calenders.urls")),
     path("api/v1/report/", include("reports.urls")),
-    path("API/", include("apis.urls")),
+    path("api/v1/apis/", include("apis.urls")),
     path("boxoffice/", include("boxapi.urls")),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
-# static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
     urlpatterns += [

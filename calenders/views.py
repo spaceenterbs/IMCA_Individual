@@ -12,7 +12,7 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExampl
 
 
 class Calendarinfo(APIView):
-    # authentication_classes = [JWTAuthentication]
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
@@ -22,7 +22,7 @@ class Calendarinfo(APIView):
     )
     def get(self, request):
         calendar = Calendar.objects.filter(owner=request.user)
-        serializer = serializers.SemiInfoSerializer(calendar, many=True)
+        serializer = serializers.DotInfoSerializer(calendar, many=True)
         return Response(serializer.data)
 
     @extend_schema(
@@ -62,13 +62,13 @@ class CalendarMenu(APIView):
 
     def get(self, request):
         date = request.GET["date"]
-        cal = Calendar.objects.filter(owner=request.user).filter(start_date=date)
-        serializer = serializers.DetailInfoSerializer(cal, many=True)
+        cal = Calendar.objects.filter(selected_date=date).filter(owner=request.user)
+        serializer = serializers.MenuSerializer(cal, many=True)
         return Response(serializer.data)
 
 
 class CalendarDetail(APIView):
-    # authentication_classes = [JWTAuthentication]
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
@@ -84,12 +84,12 @@ class CalendarDetail(APIView):
             ),
         ],
     )
-    def get(self, request, pk):
-        calendar = Calendar.objects.get(pk=pk)
-        if calendar.owner != request.user:
-            raise PermissionError
-        serializer = serializers.DetailInfoSerializer(calendar)
-        return Response(serializer.data)
+    # def get(self, request, pk):
+    #     calendar = Calendar.objects.get(pk=pk)
+    #     if calendar.owner != request.user:
+    #         raise PermissionError
+    #     serializer = serializers.DetailInfoSerializer(calendar)
+    #     return Response(serializer.data)
 
     @extend_schema(
         tags=["디테일 일정"],
@@ -117,19 +117,19 @@ class Memoapi(APIView):
     @extend_schema(
         tags=["메모 가져오기"],
         description=["pk 값으로 캘린더 가져옵니다"],
-        responses=serializers.MemoSerializer,
+        responses=serializers.GetMemoSerializer,
     )
     def get(self, request, pk):
         calendar = self.get_cal(pk)
         memo = calendar.memos.all()
         # memo = Memo.objects.filter(calendar=calendar)
-        serializer = serializers.MemoSerializer(memo, many=True)
+        serializer = serializers.GetMemoSerializer(memo, many=True)
         return Response(serializer.data)
 
     @extend_schema(
         tags=["메모 추가"],
         description="메모 추가",
-        responses=serializers.MemoSerializer,
+        responses=serializers.MixMemoSerializer,
         examples=[
             OpenApiExample(
                 response_only=True,
@@ -146,10 +146,10 @@ class Memoapi(APIView):
     )
     def post(self, request, pk):
         cal = self.get_cal(pk)
-        serializer = serializers.MemoSerializer(data=request.data)
+        serializer = serializers.MixMemoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         datas = serializer.save(calendar=cal, user=request.user)
-        serializer = serializers.MemoSerializer(datas)
+        serializer = serializers.MixMemoSerializer(datas)
         return Response(serializer.data)
 
 
@@ -172,14 +172,13 @@ class MemoDetail(APIView):
     @extend_schema(
         tags=["메모 수정"],
         description="메모 수정",
-        responses=serializers.MemoSerializer,
+        responses=serializers.MixMemoSerializer,
         examples=[
             OpenApiExample(
                 response_only=True,
                 summary="메모 수정 입니다.",
                 name="memo",
                 value={
-                    "title": "제목",
                     "content": "내용",
                 },
             ),
@@ -190,14 +189,14 @@ class MemoDetail(APIView):
         memo = self.get_memo(memo_pk, cal)
         if cal.owner != request.user:
             raise PermissionError
-        serializer = serializers.MemoSerializer(
+        serializer = serializers.MixMemoSerializer(
             memo,
             data=request.data,
             partial=True,
         )
         serializer.is_valid(raise_exception=True)
         update = serializer.save()
-        return Response(serializers.MemoSerializer(update).data)
+        return Response(serializers.MixMemoSerializer(update).data)
 
     @extend_schema(
         tags=["메모 삭제"],

@@ -19,8 +19,6 @@ from rest_framework.status import (
     HTTP_500_INTERNAL_SERVER_ERROR,
 )
 from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 # class BoardPagination(PageNumberPagination):
@@ -35,10 +33,7 @@ class CustomPagination(PageNumberPagination):
     max_page_size = 100
 
 
-class UnauthenticatedCategoryBoards(APIView):
-    authentication_classes = []  # 토큰 인증 비활성화
-    permission_classes = []  # 인증 없이 접근 가능
-
+class CategoryBoards(APIView):
     @extend_schema(
         summary="카테고리별 게시글 리스트를 가져오고, 페이지네이션을 처리함. ?page=<int:page>",
         description="각 카테고리별 게시판의 게시글을 가져오고, 페이지네이션을 처리한다.?page=<int:page>없이 요청하면 기본적으로 1페이지를 가져온다.?page=<int:page>를 사용하여 페이지를 지정할 수 있다.",
@@ -76,11 +71,6 @@ class UnauthenticatedCategoryBoards(APIView):
 
         return Response(pagination_data)
 
-
-class CategoryBoards(APIView):
-    authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
-    permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
-
     @extend_schema(
         tags=["게시판 게시글 API"],
         summary="새로운 게시글을 작성함.",
@@ -89,29 +79,20 @@ class CategoryBoards(APIView):
         responses={201: BoardSerializer()},
     )
     def post(self, request, category):
+        # Validate the category input (same as in the get method)
         if category not in [choice[0] for choice in Board.CategoryType.choices]:
-            return Response(
-                {"error": "Invalid category"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
 
-        serializer = BoardSerializer(data=request.data, context={"request": request})
+        # Deserialize the request data using the serializer
+        serializer = BoardSerializer(data=request.data)
         if serializer.is_valid():
-            # Set the category and writer
-            serializer.validated_data["category"] = category
-            serializer.validated_data["writer"] = request.user
-
             # Save the new board instance
-            board = serializer.save()
-
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            serializer.save(category=category)  # Assign the category to the board
+            return Response(serializer.data, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
-class UnauthenticatedCategoryBoardDetail(APIView):
-    authentication_classes = []  # 토큰 인증 비활성화
-    permission_classes = []  # 인증 없이 접근 가능
-
+class CategoryBoardDetail(APIView):
     @extend_schema(
         tags=["게시판 게시글 API"],
         summary="카테고리별 상세 게시글을 가져옴.",
@@ -154,11 +135,6 @@ class UnauthenticatedCategoryBoardDetail(APIView):
             return Response({"error": "Board not found"}, status=HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class CategoryBoardDetail(APIView):
-    authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
-    permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
 
     @extend_schema(
         tags=["게시판 게시글 API"],
@@ -209,10 +185,100 @@ class CategoryBoardDetail(APIView):
             return Response({"error": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class UnauthenticatedCategoryBoardLike(APIView):
-    authentication_classes = []  # 토큰 인증 비활성화
-    permission_classes = []  # 인증 없이 접근 가능
+class CategoryGatherReview(APIView):
+    @extend_schema(
+        tags=["게시판 게시글 API"],
+        summary="카테고리별 상세 게시글을 가져옴.",
+        description="카테고리별 게시글의 상세 내용을 가져온다.",
+        responses={200: BoardSerializer()},
+    )
+    def get(self, request, category, pk):
+        try:
+            # Validate the category input
+            if category not in [choice[0] for choice in Board.CategoryType.choices]:
+                return Response(
+                    {"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST
+                )
 
+            # 게시글 조회
+            board = Board.objects.get(category=category, id=pk)
+
+            # 쿠키를 사용하여 이전에 조회한 게시글인지 확인
+            visited_board_cookie = request.COOKIES.get(f"visited_board_{pk}")
+            serializer = BoardSerializer(board)
+            data = serializer.data
+            if not visited_board_cookie:
+                board.views_count += 1  # 조회수 증가
+                board.save()
+
+                # 쿠키에 게시글 ID 저장 (1일 유효)
+                response = Response(data)
+                # 쿠키 설정 (쿠키 이름: "visited_board_{pk}", 쿠키 값: "true")
+                response.set_cookie(
+                    f"visited_board_{pk}",
+                    "true",
+                )  # 유효 기간은 설정된 SESSION_COOKIE_AGE로 적용됩니다
+
+                return response
+            else:
+                return Response(data)
+            # serializer = BoardSerializer(board)
+            # return Response(serializer.data, status=HTTP_200_OK)
+        except Board.DoesNotExist:
+            return Response({"error": "Board not found"}, status=HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @extend_schema(
+        tags=["게시판 게시글 API"],
+        summary="카테고리별 상세 게시글을 수정함.",
+        description="카테고리별 게시글의 상세 내용을 수정한다.",
+        request=BoardSerializer,
+        responses={200: BoardSerializer()},
+    )
+    def put(self, request, category, pk):
+        try:
+            # Validate the category input
+            if category not in [choice[0] for choice in Board.CategoryType.choices]:
+                return Response(
+                    {"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST
+                )
+
+            board = Board.objects.get(category=category, id=pk)
+            serializer = BoardSerializer(board, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=HTTP_200_OK)
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+        except Board.DoesNotExist:
+            return Response({"error": "Board not found"}, status=HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @extend_schema(
+        tags=["게시판 게시글 API"],
+        summary="카테고리별 상세 게시글을 삭제함.",
+        description="카테고리별 게시글의 상세 내용을 삭제한다.",
+        responses={204: "No Content"},
+    )
+    def delete(self, request, category, pk):
+        try:
+            # Validate the category input
+            if category not in [choice[0] for choice in Board.CategoryType.choices]:
+                return Response(
+                    {"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST
+                )
+
+            board = Board.objects.get(category=category, id=pk)
+            board.delete()
+            return Response(status=HTTP_204_NO_CONTENT)
+        except Board.DoesNotExist:
+            return Response({"error": "Board not found"}, status=HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class CategoryBoardLike(APIView):
     @extend_schema(
         tags=["게시글 좋아요 API"],
         summary="게시글 좋아요 개수 확인",
@@ -245,11 +311,6 @@ class UnauthenticatedCategoryBoardLike(APIView):
             return Response({"error": "Board not found"}, status=HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class CategoryBoardLike(APIView):
-    authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
-    permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
 
     @extend_schema(
         tags=["게시글 좋아요 API"],
@@ -496,99 +557,6 @@ class CategoryGatherDetail(APIView):
             return Response(
                 {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-
-class CategoryGatherReview(APIView):
-    @extend_schema(
-        tags=["게시판 게시글 API"],
-        summary="카테고리별 상세 게시글을 가져옴.",
-        description="카테고리별 게시글의 상세 내용을 가져온다.",
-        responses={200: BoardSerializer()},
-    )
-    def get(self, request, category, pk):
-        try:
-            # Validate the category input
-            if category not in [choice[0] for choice in Board.CategoryType.choices]:
-                return Response(
-                    {"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST
-                )
-
-            # 게시글 조회
-            board = Board.objects.get(category=category, id=pk)
-
-            # 쿠키를 사용하여 이전에 조회한 게시글인지 확인
-            visited_board_cookie = request.COOKIES.get(f"visited_board_{pk}")
-            serializer = BoardSerializer(board)
-            data = serializer.data
-            if not visited_board_cookie:
-                board.views_count += 1  # 조회수 증가
-                board.save()
-
-                # 쿠키에 게시글 ID 저장 (1일 유효)
-                response = Response(data)
-                # 쿠키 설정 (쿠키 이름: "visited_board_{pk}", 쿠키 값: "true")
-                response.set_cookie(
-                    f"visited_board_{pk}",
-                    "true",
-                )  # 유효 기간은 설정된 SESSION_COOKIE_AGE로 적용됩니다
-
-                return response
-            else:
-                return Response(data)
-            # serializer = BoardSerializer(board)
-            # return Response(serializer.data, status=HTTP_200_OK)
-        except Board.DoesNotExist:
-            return Response({"error": "Board not found"}, status=HTTP_404_NOT_FOUND)
-        except Exception as e:
-            return Response({"error": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
-
-    @extend_schema(
-        tags=["게시판 게시글 API"],
-        summary="카테고리별 상세 게시글을 수정함.",
-        description="카테고리별 게시글의 상세 내용을 수정한다.",
-        request=BoardSerializer,
-        responses={200: BoardSerializer()},
-    )
-    def put(self, request, category, pk):
-        try:
-            # Validate the category input
-            if category not in [choice[0] for choice in Board.CategoryType.choices]:
-                return Response(
-                    {"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST
-                )
-
-            board = Board.objects.get(category=category, id=pk)
-            serializer = BoardSerializer(board, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=HTTP_200_OK)
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
-        except Board.DoesNotExist:
-            return Response({"error": "Board not found"}, status=HTTP_404_NOT_FOUND)
-        except Exception as e:
-            return Response({"error": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
-
-    @extend_schema(
-        tags=["게시판 게시글 API"],
-        summary="카테고리별 상세 게시글을 삭제함.",
-        description="카테고리별 게시글의 상세 내용을 삭제한다.",
-        responses={204: "No Content"},
-    )
-    def delete(self, request, category, pk):
-        try:
-            # Validate the category input
-            if category not in [choice[0] for choice in Board.CategoryType.choices]:
-                return Response(
-                    {"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST
-                )
-
-            board = Board.objects.get(category=category, id=pk)
-            board.delete()
-            return Response(status=HTTP_204_NO_CONTENT)
-        except Board.DoesNotExist:
-            return Response({"error": "Board not found"}, status=HTTP_404_NOT_FOUND)
-        except Exception as e:
-            return Response({"error": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 """"""

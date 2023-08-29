@@ -13,18 +13,8 @@ urlpatterns = [
         name="board_like",
     ),
     path(
-        "category/<str:category>/<int:pk>/like/get/",
-        views.UnauthenticatedCategoryBoardLike.as_view(),
-        name="board_like",
-    ),
-    path(
         "category/<str:category>/",
         views.CategoryBoards.as_view(),
-        name="board_category",
-    ),
-    path(
-        "category/<str:category>/get/",
-        views.UnauthenticatedCategoryBoards.as_view(),
         name="board_category",
     ),
     # path(
@@ -38,13 +28,8 @@ urlpatterns = [
     #     name="board_category_with_pagination",
     # ),
     path(
-        "category/<str:category>/detail/<int:pk>/",
+        "category/<str:category>/<int:pk>/",
         views.CategoryBoardDetail.as_view(),
-        name="board_category_detail",
-    ),
-    path(
-        "category/<str:category>/detail/<int:pk>/get/",
-        views.UnauthenticatedCategoryBoardDetail.as_view(),
         name="board_category_detail",
     ),
     path(
@@ -52,9 +37,9 @@ urlpatterns = [
         views.CategoryBoardsArrange.as_view(),
         name="category_boards_sort",
     ),
-    # path(
-    #     "category_gather/<str:category>/<int:pk>/",
-    #     views.CategoryGatherDetail.as_view(),
-    #     name="category_gather_detail",
-    # ),
+    path(
+        "category_gather/<str:category>/<int:pk>/",
+        views.CategoryGatherDetail.as_view(),
+        name="category_gather_detail",
+    ),
 ]

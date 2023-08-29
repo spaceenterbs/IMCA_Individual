@@ -3,10 +3,10 @@ from common.models import CommonModel
 
 
 class Bigreview(CommonModel):
-    bigreview_writer = models.ForeignKey(  # 대댓글 작성자
+    bigreview_writer = models.ForeignKey(  # 대댓글 작성자.
         "users.User",
         on_delete=models.CASCADE,
-        related_name="bigreviews_writer",  # 작성자 입장에서 해당 작성자가 작성한 대댓글들을 가져올 때 사용할 이름
+        related_name="bigreviews_written",  # 작성자 입장에서 해당 작성자가 작성한 대댓글들을 가져올 때 사용할 이름
     )
     bigreview_review = models.ForeignKey(  # 대댓글이 달린 원본 댓글
         "reviews.Review",
@@ -18,8 +18,3 @@ class Bigreview(CommonModel):
 
     def __str__(self):
         return self.bigreview_content
-
-    # def save(self, *args, **kwargs):
-    #     if not self.bigreview_writer:
-    #         self.bigreview_writer = self.request.user
-    #     super().save(*args, **kwargs)
