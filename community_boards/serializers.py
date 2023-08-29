@@ -20,6 +20,18 @@ class BoardSerializer(serializers.ModelSerializer):
         model = Board
         fields = "__all__"
 
+    def create(self, validated_data):
+        # Retrieve the category from the URL parameters
+        category = self.context["request"].parser_context["kwargs"]["category"]
+
+        # Assign the writer and category to the board
+        validated_data["writer"] = self.context["request"].user
+        validated_data["category"] = category
+
+        # Save the new board instance
+        board = Board.objects.create(**validated_data)
+        return board
+
     def get_likes_count(self, obj):
         return obj.get_likes_count()  # Board 모델의 get_likes_count 함수 호출
 

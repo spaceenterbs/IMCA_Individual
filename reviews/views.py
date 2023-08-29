@@ -18,8 +18,9 @@ from rest_framework.status import (
 from django.shortcuts import get_object_or_404
 from django.test import RequestFactory
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-from reviews.permissions import IsReviewOrBigreviewOwner
+from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 
 class CategoryReviewAndBigreviewList(APIView):
@@ -89,8 +90,8 @@ class CategoryReviewAndBigreviewList(APIView):
             review_data = ReviewSerializer(review).data
 
             # Get bigreviews for this review
-            review_bigreviews = bigreviews.filter(bigreview_review=review.id)
-            bigreview_data = BigreviewSerializer(review_bigreviews, many=True).data
+            bigreviews_in_review = bigreviews.filter(bigreview_review=review.id)
+            bigreview_data = BigreviewSerializer(bigreviews_in_review, many=True).data
 
             review_data["bigreviews"] = bigreview_data
             combined_data.append(review_data)
@@ -107,8 +108,18 @@ class CategoryReviewAndBigreviewList(APIView):
     def post(self, request, category, board_id, review_id=None):
         data = request.data.copy()
 
-        # Set the review_writer field to the current user
-        data["review_writer"] = request.user.id
+        # Check if the user is authenticated
+        if not request.user.is_authenticated:
+            return Response(
+                {"error": "You need to be logged in to post a review."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        # Set the review_writer field to the current user's id or None
+        if isinstance(request.user, AnonymousUser):
+            data["review_writer"] = None
+        else:
+            data["review_writer"] = request.user.id
 
         review_serializer = ReviewSerializer(data=data)
         bigreview_serializer = BigreviewSerializer(data=data)
@@ -118,9 +129,7 @@ class CategoryReviewAndBigreviewList(APIView):
                 # If review_id is provided, treat it as a reply (bigreview)
                 try:
                     parent_review = Review.objects.get(pk=review_id)
-                    data[
-                        "bigreview_review"
-                    ] = parent_review.id  # Change to bigreview_review
+                    data["bigreview_review"] = parent_review.id
                     if bigreview_serializer.is_valid():
                         bigreview_serializer.save(review_board_id=board_id)
                         return Response(

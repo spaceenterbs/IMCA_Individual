@@ -88,7 +88,6 @@ class CategoryBoards(APIView):
         if serializer.is_valid():
             # Assign the writer and category to the board
             serializer.validated_data["writer"] = request.user
-            serializer.validated_data["category"] = category
 
             # Save the new board instance
             serializer.save()
