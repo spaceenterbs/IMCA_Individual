@@ -26,8 +26,6 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 class CategoryBoards(APIView):
     authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
     permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
-    print("a")
-    print(authentication_classes)
 
     @extend_schema(
         tags=["게시판 게시글 API"],

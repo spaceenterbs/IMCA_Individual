@@ -52,6 +52,10 @@ THIRDPARTY_APPS = [
     "django_apscheduler",
     "xmltodict",
     # "sslserver",
+    # "dj_rest_auth",
+    # "dj_rest_auth.registration",
+    # "allauth",
+    # "allauth.account",
 ]
 
 DEFAULT_APPS = [

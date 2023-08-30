@@ -101,8 +101,8 @@ class UnauthenticatedCategoryReviewAndBigreviewList(APIView):
 
 
 class CategoryReviewAndBigreviewList(APIView):
-    authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
-    permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
+    # authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
+    # permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
 
     @extend_schema(
         tags=["댓글과 대댓글"],
@@ -112,51 +112,61 @@ class CategoryReviewAndBigreviewList(APIView):
             201: ReviewSerializer()
         },  # ReviewSerializer 또는 BigreviewSerializer에 맞게 수정
     )
-    def post(self, request, category, board_id, review_id=None):
-        data = request.data.copy()
+    def post(self, request, category, board_id, format=None):
+        review_content = request.data.get("review_content")
+        bigreview_content = request.data.get("bigreview_content")
 
-        # Check if the user is authenticated
-        if not request.user.is_authenticated:
+        if not review_content and not bigreview_content:
             return Response(
-                {"error": "You need to be logged in to post a comment."},
-                status=status.HTTP_401_UNAUTHORIZED,
+                {"error": "Missing required fields."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Determine the type of comment (Review or Bigreview)
-        is_big_review = review_id is not None
+        try:
+            review_board = Board.objects.get(pk=board_id)
+        except Board.DoesNotExist:
+            return Response(
+                {"error": "Board_id not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
-        # Choose the appropriate serializer and related models
-        if is_big_review:
-            serializer = BigreviewSerializer(data=data, context={"request": request})
-            related_review_model = Bigreview
-            related_writer_field = "bigreview_writer"
-            related_review_field = "bigreview_review"
-        else:
-            serializer = ReviewSerializer(data=data, context={"request": request})
-            related_review_model = Review
-            related_writer_field = "review_writer"
-            related_review_field = "review_board"
+        if review_content:
+            review_writer = request.user
+            review = Review(
+                review_writer=review_writer,
+                review_board=review_board,
+                review_content=review_content,
+            )
+            review.save()
+            review_serializer = ReviewSerializer(review)
+            return Response(review_serializer.data, status=status.HTTP_201_CREATED)
 
-        if serializer.is_valid():
-            # Convert user id to User instance
-            if not isinstance(request.user, AnonymousUser):
-                data[related_writer_field] = request.user
+        if bigreview_content:
+            try:
+                review_id = request.data.get(
+                    "bigreview_review"
+                )  # 프론트에서 bigreview_review로 전달한 리뷰 ID
+                review = Review.objects.get(pk=review_id)
+            except Review.DoesNotExist:
+                return Response(
+                    {"error": "Review not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
 
-            # Validate parent review if it's a big review
-            if is_big_review:
-                try:
-                    related_review = related_review_model.objects.get(pk=review_id)
-                    data[related_review_field] = related_review.id
-                except related_review_model.DoesNotExist:
-                    return Response(
-                        {"error": "Parent review does not exist."},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
+            bigreview_writer = request.user
+            bigreview = Bigreview(
+                bigreview_writer=bigreview_writer,
+                bigreview_review=review,
+                bigreview_content=bigreview_content,
+            )
+            bigreview.save()
+            bigreview_serializer = BigreviewSerializer(bigreview)
+            return Response(bigreview_serializer.data, status=status.HTTP_201_CREATED)
 
-            serializer.save(review_board_id=board_id)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "Invalid request."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     @extend_schema(
         tags=["댓글과 대댓글"],
@@ -168,19 +178,15 @@ class CategoryReviewAndBigreviewList(APIView):
     def put(self, request, category, board_id):
         review_id = request.data.get("review_id")
         bigreview_id = request.data.get("bigreview_id")
-        content = request.data.get("content")
-
-        if not content:
-            return Response(
-                {"error": "내용을 입력해주세요."}, status=status.HTTP_400_BAD_REQUEST
-            )
+        review_content = request.data.get("review_content")
+        bigreview_content = request.data.get("bigreview_content")
 
         try:
-            if review_id:
+            if review_id and review_content:
                 review = Review.objects.get(id=review_id, review_board__id=board_id)
 
                 if review.review_writer == request.user or request.user.is_staff:
-                    review.review_content = content
+                    review.review_content = review_content
                     review.save()
                     return Response(
                         {"message": "댓글이 수정되었습니다."}, status=status.HTTP_200_OK
@@ -189,14 +195,13 @@ class CategoryReviewAndBigreviewList(APIView):
                     return Response(
                         {"error": "권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN
                     )
-            elif bigreview_id:
+            elif bigreview_id and bigreview_content:
                 bigreview = Bigreview.objects.get(
                     id=bigreview_id, bigreview_review__review_board__id=board_id
                 )
 
-                # 권한 확인 없이 작성자 또는 관리자만 수정 가능
                 if bigreview.bigreview_writer == request.user or request.user.is_staff:
-                    bigreview.bigreview_content = content
+                    bigreview.bigreview_content = bigreview_content
                     bigreview.save()
                     return Response(
                         {"message": "대댓글이 수정되었습니다."}, status=status.HTTP_200_OK
@@ -207,7 +212,7 @@ class CategoryReviewAndBigreviewList(APIView):
                     )
             else:
                 return Response(
-                    {"error": "댓글 또는 대댓글 ID를 입력해주세요."},
+                    {"error": "댓글 또는 대댓글 ID와 내용을 입력해주세요."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
         except (Review.DoesNotExist, Bigreview.DoesNotExist):
