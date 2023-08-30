@@ -20,6 +20,7 @@ from rest_framework.status import (
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.shortcuts import redirect
 
 
 class CategoryBoards(APIView):
@@ -93,10 +94,10 @@ class UnauthenticatedCategoryBoards(APIView):
             "results": serializer.data,
         }
 
-        # # Check if the requested page is the default page (1)
-        # if not request.query_params.get("page"):
-        #     # Redirect to the URL with ?page=1
-        #     return redirect(request.path + "?page=1")
+        # Check if the requested page is the default page (1)
+        if not request.query_params.get("page"):  # 페이지 파라미터가 없으면
+            # Redirect to the URL with ?page=1
+            return redirect(request.path + "?page=1")  # 기본 페이지로 리다이렉트
 
         return Response(pagination_data)
 
@@ -277,63 +278,6 @@ class CategoryBoardLike(APIView):
         }
 
         return Response(response_data, status=HTTP_200_OK)
-
-
-# class BoardLike(APIView):
-#     @extend_schema(
-#         tags=["게시글 좋아요 API"],
-#         summary="게시글 좋아요 개수 확인",
-#         description="게시글에 좋아요를 누른 사용자 수를 확인한다.",
-#         responses={200: BoardSerializer()},
-#     )
-#     def get(self, request, pk):
-#         board = get_object_or_404(Board, pk=pk)
-
-#         # 각 게시물당 좋아요 수 계산
-#         likes_count = board.likes_user.count()
-
-#         data = {
-#             "board": BoardSerializer(board).data,
-#             "likes_count": likes_count,
-#         }
-
-#         return Response(data)
-
-#         # # 다음에 이동할 URL을 설정
-#         # url_next = request.GET.get("next") or reverse(
-#         #     "community_boards:board_detail", args=[pk]
-#         # )
-#         # # 해당 URL로 리다이렉트
-#         # return redirect(url_next)
-
-#         """
-#         클라이언트가 게시글에 좋아요를 누를 때, 해당 게시글의 좋아요 상태를 토글하고, 사용자를 원래 페이지로 리다이렉트하는 기능을 구현한 것
-#         """
-
-#     @extend_schema(
-#         tags=["게시글 좋아요 API"],
-#         summary="게시글 좋아요",
-#         description="게시글에 좋아요를 누른다.",
-#         responses={200: BoardSerializer()},
-#     )
-#     def post(self, request, pk):
-#         # 게시글 객체를 가져옴
-#         board = get_object_or_404(Board, pk=pk)
-#         # 현재 요청을 보낸 사용자
-#         user = request.user
-
-#         # 사용자가 이미 좋아요를 눌렀다면 좋아요를 취소하고,
-#         # 그렇지 않으면 좋아요를 추가
-#         if user in board.likes_user.all():
-#             board.likes_user.remove(user)
-#         else:
-#             board.likes_user.add(user)
-
-#         # 페이지 이동 없이 현재 페이지에서 좋아요 토글 후 응답을 반환
-#         return Response(
-#             {"likes_user": board.likes_user.count()},
-#             HTTP_200_OK,
-#         )
 
 
 class CategoryBoardsArrange(APIView):
@@ -585,6 +529,64 @@ class CategoryGatherReview(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+""""""
+
+# class BoardLike(APIView):
+#     @extend_schema(
+#         tags=["게시글 좋아요 API"],
+#         summary="게시글 좋아요 개수 확인",
+#         description="게시글에 좋아요를 누른 사용자 수를 확인한다.",
+#         responses={200: BoardSerializer()},
+#     )
+#     def get(self, request, pk):
+#         board = get_object_or_404(Board, pk=pk)
+
+#         # 각 게시물당 좋아요 수 계산
+#         likes_count = board.likes_user.count()
+
+#         data = {
+#             "board": BoardSerializer(board).data,
+#             "likes_count": likes_count,
+#         }
+
+#         return Response(data)
+
+#         # # 다음에 이동할 URL을 설정
+#         # url_next = request.GET.get("next") or reverse(
+#         #     "community_boards:board_detail", args=[pk]
+#         # )
+#         # # 해당 URL로 리다이렉트
+#         # return redirect(url_next)
+
+#         """
+#         클라이언트가 게시글에 좋아요를 누를 때, 해당 게시글의 좋아요 상태를 토글하고, 사용자를 원래 페이지로 리다이렉트하는 기능을 구현한 것
+#         """
+
+#     @extend_schema(
+#         tags=["게시글 좋아요 API"],
+#         summary="게시글 좋아요",
+#         description="게시글에 좋아요를 누른다.",
+#         responses={200: BoardSerializer()},
+#     )
+#     def post(self, request, pk):
+#         # 게시글 객체를 가져옴
+#         board = get_object_or_404(Board, pk=pk)
+#         # 현재 요청을 보낸 사용자
+#         user = request.user
+
+#         # 사용자가 이미 좋아요를 눌렀다면 좋아요를 취소하고,
+#         # 그렇지 않으면 좋아요를 추가
+#         if user in board.likes_user.all():
+#             board.likes_user.remove(user)
+#         else:
+#             board.likes_user.add(user)
+
+#         # 페이지 이동 없이 현재 페이지에서 좋아요 토글 후 응답을 반환
+#         return Response(
+#             {"likes_user": board.likes_user.count()},
+#             HTTP_200_OK,
+#         )
 
 """"""
 
