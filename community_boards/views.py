@@ -23,10 +23,35 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
-# class BoardPagination(PageNumberPagination):
-#     page_size = 5
-#     page_size_query_param = "page_size"
-#     max_page_size = 100
+class CategoryBoards(APIView):
+    authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
+    permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
+
+    @extend_schema(
+        tags=["게시판 게시글 API"],
+        summary="새로운 게시글을 작성함.",
+        description="새로운 게시글을 작성한다.",
+        request=BoardSerializer,
+        responses={201: BoardSerializer()},
+    )
+    def post(self, request, category):
+        if category not in [choice[0] for choice in Board.CategoryType.choices]:
+            return Response(
+                {"error": "Invalid category"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = BoardSerializer(data=request.data, context={"request": request})
+        if serializer.is_valid():
+            # Set the category and writer
+            serializer.validated_data["category"] = category
+            serializer.validated_data["writer"] = request.user
+
+            # Save the new board instance
+            board = serializer.save()
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CustomPagination(PageNumberPagination):
@@ -75,37 +100,6 @@ class UnauthenticatedCategoryBoards(APIView):
         #     return redirect(request.path + "?page=1")
 
         return Response(pagination_data)
-
-
-class CategoryBoards(APIView):
-    authentication_classes = [JWTAuthentication]  # JWT 토큰 인증 사용
-    permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
-
-    @extend_schema(
-        tags=["게시판 게시글 API"],
-        summary="새로운 게시글을 작성함.",
-        description="새로운 게시글을 작성한다.",
-        request=BoardSerializer,
-        responses={201: BoardSerializer()},
-    )
-    def post(self, request, category):
-        if category not in [choice[0] for choice in Board.CategoryType.choices]:
-            return Response(
-                {"error": "Invalid category"}, status=status.HTTP_400_BAD_REQUEST
-            )
-
-        serializer = BoardSerializer(data=request.data, context={"request": request})
-        if serializer.is_valid():
-            # Set the category and writer
-            serializer.validated_data["category"] = category
-            serializer.validated_data["writer"] = request.user
-
-            # Save the new board instance
-            board = serializer.save()
-
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UnauthenticatedCategoryBoardDetail(APIView):
@@ -593,6 +587,10 @@ class CategoryGatherReview(APIView):
 
 """"""
 
+# class BoardPagination(PageNumberPagination):
+#     page_size = 5
+#     page_size_query_param = "page_size"
+#     max_page_size = 100
 
 # class Boards(APIView):
 #     # pagination_class = CustomPagination
