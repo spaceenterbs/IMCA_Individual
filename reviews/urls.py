@@ -1,17 +1,16 @@
 from django.urls import path
 from . import views
-from .views import ReviewCreate, BigreviewCreate
+
+# from .views import ReviewCreate, BigreviewCreate
 
 urlpatterns = [
     path(
         "category_gather_review/<str:category>/<int:board_id>/",
         views.CategoryReviewAndBigreviewList.as_view(),
-        name="category-gather-review",
     ),
     path(
         "category_gather_review/<str:category>/<int:board_id>/get/",
         views.UnauthenticatedCategoryReviewAndBigreviewList.as_view(),
-        name="category-gather-review",
     ),
 ]
 # path(
