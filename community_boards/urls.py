@@ -7,13 +7,38 @@ from . import views
 urlpatterns = [
     # path("", views.Boards.as_view(), name="boards"),
     # path("<int:pk>/", views.BoardDetail.as_view(), name="board_detail"),
-    path("category/<str:category>/", views.CategoryBoards.as_view()),
-    path("category/<str:category>/get/", views.UnauthenticatedCategoryBoards.as_view()),
-    path("category/<str:category>/<int:pk>/like/", views.CategoryBoardLike.as_view()),
+    ##
+    ##
+    path(
+        "category/<str:category>/",
+        views.CategoryBoards.as_view(),
+    ),  # 같은 url에 다른 api를 적용시키면 앞에 있는 api만 적용된다.
+    path(
+        "category/<str:category>/get/",
+        views.UnauthenticatedCategoryBoards.as_view(),
+    ),
+    path(
+        "category/<str:category>/<int:pk>/like/",
+        views.CategoryBoardLike.as_view(),
+    ),
     path(
         "category/<str:category>/<int:pk>/like/get/",
         views.UnauthenticatedCategoryBoardLike.as_view(),
     ),
+    path(
+        "category/<str:category>/detail/<int:pk>/",
+        views.CategoryBoardDetail.as_view(),
+    ),
+    path(
+        "category/<str:category>/detail/<int:pk>/get/",
+        views.UnauthenticatedCategoryBoardDetail.as_view(),
+    ),
+    path(
+        "category/<str:category>/count",
+        views.CategoryBoardsArrange.as_view(),
+    ),
+    ##
+    ##
     # path(
     #     "category/<str:category>/page/<int:page>/",
     #     views.CategoryBoards.as_view(),
@@ -24,14 +49,6 @@ urlpatterns = [
     #     views.CategoryBoards.as_view(),
     #     name="board_category_with_pagination",
     # ),
-    path(
-        "category/<str:category>/detail/<int:pk>/", views.CategoryBoardDetail.as_view()
-    ),
-    path(
-        "category/<str:category>/detail/<int:pk>/get/",
-        views.UnauthenticatedCategoryBoardDetail.as_view(),
-    ),
-    path("category/<str:category>/count", views.CategoryBoardsArrange.as_view()),
     # path(
     #     "category_gather/<str:category>/<int:pk>/",
     #     views.CategoryGatherDetail.as_view(),
