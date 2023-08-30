@@ -1,10 +1,6 @@
 from django.db import models
 from common.models import CommonModel
 
-# from users.models import User
-# from reviews.models import Review
-# from bigreviews.models import Bigreview
-
 
 class Board(CommonModel):
     class CategoryType(models.TextChoices):
@@ -12,19 +8,22 @@ class Board(CommonModel):
         후기 = ("after", "후기")
         양도 = ("trade", "양도")
 
-    writer = models.ForeignKey(
+    writer = models.ForeignKey(  # 1:N 관계, serializer로 User 모델과 연결할 수 있다.
         "users.User",
         on_delete=models.CASCADE,
         related_name="boards_user",  # 사용자 입장에서 해당 사용자가 작성한 게시글들을 가져올 때 사용할 이름
     )
-    Image = models.URLField(blank=True, null=True)  # 이미지
-    title = models.CharField(max_length=30, null=False, blank=False)
+    Image = models.URLField(blank=True, null=True)
+    title = models.CharField(max_length=30, blank=False, null=False)
     content = models.TextField(null=False, blank=False)
-    category = models.CharField(max_length=12, choices=CategoryType.choices)
+    category = models.CharField(
+        max_length=12, choices=CategoryType.choices
+    )  # choices는 선택지를 제한할 때 사용한다.
     views_count = models.PositiveIntegerField(default=0)
     likes_user = models.ManyToManyField(  # 게시글에 좋아요를 누른 사용자들
-        # 이 필드는 ManyToManyField로 선언되었습니다. 이것은 좋아요를 누른 사용자들과 게시글 간의 다대다 관계를 나타냅니다.
-        # 위의 코드에서는 blank=True로 설정하여 해당 필드가 비어있을 수 있다는 것을 허용하고, 사용자가 좋아요를 누르지 않은 경우에도 게시글을 생성할 수 있도록 합니다.
+        # 좋아요를 누른 사용자들과 게시글 간의 다대다 관계를 나타낸다.
+        # 위의 코드에서는 blank=True로 설정하여 해당 필드가 비어있을 수 있다는 것을 허용하고
+        # 사용자가 좋아요를 누르지 않은 경우에도 게시글을 생성할 수 있도록 한다.
         "users.User",
         verbose_name="좋아요 목록",
         blank=True,

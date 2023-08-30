@@ -5,11 +5,10 @@ from rest_framework.response import Response
 from .serializers import BoardSerializer
 from reviews.serializers import ReviewSerializer
 from bigreviews.serializers import BigreviewSerializer
-from django.shortcuts import redirect
-from rest_framework import status
 from .models import Board
 from reviews.models import Review
 from bigreviews.models import Bigreview
+from rest_framework import status
 from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -32,7 +31,7 @@ class CategoryBoards(APIView):
         summary="새로운 게시글을 작성함.",
         description="새로운 게시글을 작성한다.",
         request=BoardSerializer,
-        responses={201: BoardSerializer()},
+        responses={201: BoardSerializer},
     )
     def post(self, request, category):
         if category not in [choice[0] for choice in Board.CategoryType.choices]:
