@@ -83,7 +83,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
         # "dj_rest_auth.authentication.JWTCookieAuthentication",
         "rest_framework.authentication.TokenAuthentication",
-        #     "rest_framework.authentication.SessionAuthentication",  # 개발할 때 편하게 하기 위해 추가 ## 나중에 주석 해서 배포할 때 주석해줘야함
+        "rest_framework.authentication.SessionAuthentication",  # 개발할 때 편하게 하기 위해 추가 ## 나중에 주석 해서 배포할 때 주석해줘야함
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
