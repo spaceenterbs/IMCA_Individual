@@ -18,14 +18,6 @@ urlpatterns = [
         views.UnauthenticatedCategoryBoards.as_view(),
     ),
     path(
-        "category/<str:category>/<int:pk>/like/",
-        views.CategoryBoardLike.as_view(),
-    ),
-    path(
-        "category/<str:category>/<int:pk>/like/get/",
-        views.UnauthenticatedCategoryBoardLike.as_view(),
-    ),
-    path(
         "category/<str:category>/detail/<int:pk>/",
         views.CategoryBoardDetail.as_view(),
     ),
@@ -34,24 +26,15 @@ urlpatterns = [
         views.UnauthenticatedCategoryBoardDetail.as_view(),
     ),
     path(
+        "category/<str:category>/<int:pk>/like/",
+        views.CategoryBoardLike.as_view(),
+    ),
+    path(
+        "category/<str:category>/<int:pk>/like/get/",
+        views.UnauthenticatedCategoryBoardLike.as_view(),
+    ),
+    path(
         "category/<str:category>/count",
         views.CategoryBoardsArrange.as_view(),
     ),
-    ##
-    ##
-    # path(
-    #     "category/<str:category>/page/<int:page>/",
-    #     views.CategoryBoards.as_view(),
-    #     name="board_category",
-    # ),
-    # path(
-    #     "category/<str:category>/page/<int:page>/",
-    #     views.CategoryBoards.as_view(),
-    #     name="board_category_with_pagination",
-    # ),
-    # path(
-    #     "category_gather/<str:category>/<int:pk>/",
-    #     views.CategoryGatherDetail.as_view(),
-    #     name="category_gather_detail",
-    # ),
 ]
