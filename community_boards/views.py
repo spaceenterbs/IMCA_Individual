@@ -27,11 +27,11 @@ class CategoryBoards(APIView):
     permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
 
     @extend_schema(
-        tags=["게시판 게시글 API"],
         summary="새로운 게시글을 작성함.",
         description="새로운 게시글을 작성한다.",
         request=BoardSerializer,
-        responses={201: BoardSerializer},
+        responses={201: BoardSerializer()},
+        tags=["게시판 게시글 API"],
     )
     def post(self, request, category):
         if category not in [choice[0] for choice in Board.CategoryType.choices]:
@@ -65,7 +65,7 @@ class UnauthenticatedCategoryBoards(APIView):
 
     @extend_schema(
         summary="카테고리별 게시글 리스트를 가져오고, 페이지네이션을 처리함. ?page=<int:page>",
-        description="각 카테고리별 게시판의 게시글을 가져오고, 페이지네이션을 처리한다.?page=<int:page>없이 요청하면 기본적으로 1페이지를 가져온다.?page=<int:page>를 사용하여 페이지를 지정할 수 있다.",
+        description="각 카테고리별 게시판의 게시글을 가져오고, 페이지네이션을 처리한다. ?page=<int:page>없이 요청하면 기본적으로 1페이지를 가져온다.?page=<int:page>를 사용하여 페이지를 지정할 수 있다.",
         responses={200: BoardSerializer(many=True)},
         tags=["게시판 게시글 API"],
     )
@@ -106,11 +106,11 @@ class CategoryBoardDetail(APIView):
     permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
 
     @extend_schema(
-        tags=["게시판 게시글 API"],
         summary="카테고리별 상세 게시글을 수정함.",
         description="카테고리별 게시글의 상세 내용을 수정한다.",
         request=BoardSerializer,
         responses={200: BoardSerializer()},
+        tags=["게시판 게시글 API"],
     )
     def put(self, request, category, pk):
         try:
@@ -133,8 +133,8 @@ class CategoryBoardDetail(APIView):
 
     @extend_schema(
         tags=["게시판 게시글 API"],
-        summary="카테고리별 상세 게시글을 삭제함.",
-        description="카테고리별 게시글의 상세 내용을 삭제한다.",
+        summary="카테고리별 게시글을 삭제함.",
+        description="카테고리별 게시글을 삭제한다.",
         responses={204: "No Content"},
     )
     def delete(self, request, category, pk):
@@ -159,10 +159,10 @@ class UnauthenticatedCategoryBoardDetail(APIView):
     permission_classes = []  # 인증 없이 접근 가능
 
     @extend_schema(
-        tags=["게시판 게시글 API"],
         summary="카테고리별 상세 게시글을 가져옴.",
         description="카테고리별 게시글의 상세 내용을 가져온다.",
         responses={200: BoardSerializer()},
+        tags=["게시판 게시글 API"],
     )
     def get(self, request, category, pk):
         try:
@@ -207,10 +207,11 @@ class UnauthenticatedCategoryBoardLike(APIView):
     permission_classes = []  # 인증 없이 접근 가능
 
     @extend_schema(
-        tags=["게시글 좋아요 API"],
         summary="게시글 좋아요 개수 확인",
         description="게시글에 좋아요를 누른 사용자 수를 확인한다.",
-        responses={200: BoardSerializer()},
+        request=BoardSerializer,
+        responses={201: BoardSerializer()},
+        tags=["게시글 좋아요 API"],
     )
     def get(self, request, category, pk):
         try:
@@ -245,10 +246,11 @@ class CategoryBoardLike(APIView):
     permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 허용
 
     @extend_schema(
-        tags=["게시글 좋아요 API"],
         summary="게시글 좋아요",
         description="게시글에 좋아요를 누른다.",
+        request=BoardSerializer,
         responses={200: BoardSerializer()},
+        tags=["게시글 좋아요 API"],
     )
     def post(self, request, category, pk):
         if category not in [choice[0] for choice in Board.CategoryType.choices]:
