@@ -40,6 +40,13 @@ class CategoryBoards(APIView):
                 {"error": "Invalid category"}, status=status.HTTP_400_BAD_REQUEST
             )
 
+        # Check if the user is authenticated
+        if (
+            not request.user.is_authenticated
+        ):  # post는 게시글 작성을 위한 것이므로 로그인한 사용자에게만 권한을 부여하기 위해 "is_authenticated"를 사용한다.
+            return Response({"error": "권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
+
+        # Create a new board instance with user as writer
         serializer = BoardSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
             # Set the category and writer
@@ -50,8 +57,6 @@ class CategoryBoards(APIView):
             board = serializer.save()
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CustomPagination(PageNumberPagination):
@@ -122,11 +127,13 @@ class CategoryBoardDetail(APIView):
                 )
 
             board = Board.objects.get(category=category, id=pk)
-            serializer = BoardSerializer(board, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=HTTP_200_OK)
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+            if board.board_writer == request.user or request.user.is_staff:
+                serializer = BoardSerializer(board, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data, status=HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
         except Board.DoesNotExist:
             return Response({"error": "Board not found"}, status=HTTP_404_NOT_FOUND)
         except Exception as e:
@@ -147,8 +154,15 @@ class CategoryBoardDetail(APIView):
                 )
 
             board = Board.objects.get(category=category, id=pk)
-            board.delete()
-            return Response(status=HTTP_204_NO_CONTENT)
+
+            # Check if the user is the owner or staff
+            if board.board_writer == request.user or request.user.is_staff:
+                board.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response(
+                    {"error": "권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN
+                )
         except Board.DoesNotExist:
             return Response({"error": "Board not found"}, status=HTTP_404_NOT_FOUND)
         except Exception as e:
@@ -291,7 +305,7 @@ class CategoryBoardsArrange(APIView):
         if category not in [choice[0] for choice in Board.CategoryType.choices]:
             return Response({"error": "Invalid category"}, HTTP_400_BAD_REQUEST)
 
-        boards = Board.objects.filter(category=category).order_by("-created_at")[:2]
+        boards = Board.objects.filter(category=category).order_by("-created_at")[:5]
 
         serializer = BoardSerializer(boards, many=True)
         return Response(serializer.data, HTTP_200_OK)
