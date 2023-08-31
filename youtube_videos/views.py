@@ -76,7 +76,7 @@ class Youtube_VideoDetail(APIView):
 
                 # 쿠키에 게시글 ID 저장 (1일 유효)
                 response = Response(data)
-                # 쿠키 설정 (쿠키 이름: "visited_board_{pk}", 쿠키 값: "true")
+                # 쿠키 설정 (쿠키 이름: "visited_video_{pk}", 쿠키 값: "true")
                 response.set_cookie(
                     f"visited_video_{pk}",
                     "true",

@@ -198,13 +198,13 @@ class UnauthenticatedCategoryBoardDetail(APIView):
                 board.views_count += 1  # 조회수 증가
                 board.save()
 
-                # 쿠키에 게시글 ID 저장 (1일 유효)
+                # 쿠키에 게시글 ID 저장 (12시간 유효) # SESSION_COOKIE_AGE = 43200
                 response = Response(data)
                 # 쿠키 설정 (쿠키 이름: "visited_board_{pk}", 쿠키 값: "true")
                 response.set_cookie(
                     f"visited_board_{pk}",
                     "true",
-                )  # 유효 기간은 설정된 SESSION_COOKIE_AGE로 적용됩니다
+                )  # 유효 기간은 설정된 SESSION_COOKIE_AGE로 적용된다
 
                 return response
             else:
