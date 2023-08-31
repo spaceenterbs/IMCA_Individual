@@ -75,7 +75,7 @@ class UnauthenticatedCategoryBoards(APIView):
         if category not in [choice[0] for choice in Board.CategoryType.choices]:
             return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
 
-        boards = Board.objects.filter(category=category)
+        boards = Board.objects.filter(category=category).order_by("-created_at")
         total_boards_count = boards.count()
 
         paginator = CustomPagination()

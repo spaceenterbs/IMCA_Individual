@@ -240,7 +240,6 @@ class CategoryReviewAndBigreviewList(APIView):
         try:
             if review_id:
                 review = Review.objects.get(id=review_id, review_board__id=board_id)
-
                 if review.review_writer == request.user or request.user.is_staff:
                     review.delete()
                     return Response(
