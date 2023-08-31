@@ -31,6 +31,16 @@ class Board(CommonModel):
     )
     is_blocked = models.BooleanField(default=False)
 
+    def __str__(self):
+        return self.title
+
+    def get_likes_count(self):  # likes_user 필드를 통해 해당 게시글이 받은 좋아요 수를 반환한다.
+        # self.likes_user_count()를 호출하여 해당 게시글의 좋아요 수를 계산하고 반환한다.
+        likes_count = (
+            self.likes_user.count()
+        )  # count() 메서드를 사용하여 해당 게시글의 좋아요 수를 계산하고 반환한다.
+        return likes_count
+
     # reviews_num = models.ForeignKey(  # 게시글에 달린 댓글들
     #     # 이 필드는 ForeignKey로 선언되었습니다. 이것은 각 게시글에 달린 댓글을 나타냅니다.
     #     # Review 모델과 연결되는데, related_name을 사용하여 리뷰 입장에서 해당 게시글을 가져올 때 사용할 이름을 지정합니다. 이 필드도 blank=True, null=True로 설정하여 해당 필드가 비어있을 수 있도록 합니다.
@@ -41,16 +51,6 @@ class Board(CommonModel):
     #     blank=True,
     #     null=True,
     # )
-
-    def __str__(self):
-        return self.title
-
-    def get_likes_count(self):  # likes_user 필드를 통해 해당 게시글이 받은 좋아요 수를 반환한다.
-        # self.likes_user_count()를 호출하여 해당 게시글의 좋아요 수를 계산하고 반환한다.
-        likes_count = (
-            self.likes_user.count()
-        )  # count() 메서드를 사용하여 해당 게시글의 좋아요 수를 계산하고 반환한다.
-        return likes_count
 
 
 '''
