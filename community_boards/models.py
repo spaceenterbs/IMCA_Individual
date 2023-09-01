@@ -4,7 +4,7 @@ from common.models import CommonModel
 
 class Board(CommonModel):
     class CategoryType(models.TextChoices):
-        자게 = ("free", "자게")
+        자게 = ("free", "자유")
         후기 = ("after", "후기")
         양도 = ("trade", "양도")
 
