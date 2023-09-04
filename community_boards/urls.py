@@ -34,7 +34,7 @@ urlpatterns = [
         views.UnauthenticatedCategoryBoardLike.as_view(),
     ),
     path(
-        "category/<str:category>/count",
+        "category/<str:category>/count/",
         views.CategoryBoardsArrange.as_view(),
     ),
 ]

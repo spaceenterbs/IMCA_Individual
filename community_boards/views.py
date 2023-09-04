@@ -237,21 +237,22 @@ class CategoryBoardLike(APIView):
         # Get the user making the request
         user = request.user
 
-        # Toggle the like status for the user
+        # 사용자의 좋아요 상태를 토글합니다.
         if user in board.likes_user.all():
             board.likes_user.remove(user)
         else:
             board.likes_user.add(user)
 
-        # Calculate the updated likes count
+        # 업데이트된 좋아요 수를 계산합니다.
         likes_count = board.likes_user.count()
 
-        # Create the response data with updated likes count
+        # 업데이트된 좋아요 수와 게시물 정보를 포함한 응답 데이터를 생성합니다.
         response_data = {
             "board": BoardSerializer(board).data,
             "likes_count": likes_count,
         }
 
+        # HTTP 200 OK 상태 코드와 함께 응답을 반환합니다.
         return Response(response_data, status=HTTP_200_OK)
 
 

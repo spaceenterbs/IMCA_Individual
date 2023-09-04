@@ -70,33 +70,35 @@ class UnauthenticatedCategoryReviewAndBigreviewList(APIView):
             )
         ],
     )
-    def get(self, request, category, board_id):  # board_id를 추가로 받습니다.
-        # Validate the category input
+    def get(self, request, category, board_id):
+        # 카테고리 입력 값 확인
         if category not in [choice[0] for choice in Board.CategoryType.choices]:
-            return Response({"error": "Invalid category"}, status=HTTP_400_BAD_REQUEST)
+            return Response({"error": "유효하지 않은 카테고리"}, status=HTTP_400_BAD_REQUEST)
 
-        # Get the specific board using board_id
+        # board_id를 사용하여 특정 게시물을 가져온다.
         board = get_object_or_404(Board, id=board_id)
 
-        # Get reviews and their bigreviews for the specified board
+        # 해당 게시물에 대한 리뷰와 그에 속한 큰 리뷰를 가져온다.
         reviews = Review.objects.filter(review_board=board)
         review_id = reviews.values_list("id", flat=True)
         bigreviews = Bigreview.objects.filter(bigreview_review__in=review_id)
 
-        # Create a dictionary to store combined data
+        # 결합된 데이터를 저장하기 위한 딕셔너리를 생성한다.
         combined_data = []
 
-        # Loop through each review
+        # 각 리뷰를 순환한다.
         for review in reviews:
             review_data = ReviewSerializer(review).data
 
-            # Get bigreviews for this review
+            # 이 리뷰에 속하는 큰 리뷰를 가져온다.
             bigreviews_in_review = bigreviews.filter(bigreview_review=review.id)
             bigreview_data = BigreviewSerializer(bigreviews_in_review, many=True).data
 
+            # review_data 딕셔너리에 "bigreviews" 키를 추가하고, 그 값으로 bigreview_data를 할당한다.
             review_data["bigreviews"] = bigreview_data
             combined_data.append(review_data)
 
+        # 결합된 데이터를 응답으로 반환한다.
         return Response(combined_data, status=HTTP_200_OK)
 
 
